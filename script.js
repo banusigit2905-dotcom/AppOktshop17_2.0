@@ -251,7 +251,7 @@ function loadAdminData() {
         </tr>`;
     }).join('') || '<tr><td colspan="3" style="text-align:center">Belum ada penukaran</td></tr>';
 });
-
+}
 // --- FUNGSI-FUNGSI LAINNYA (TETAP SAMA NAMUN DIRAPIKAN) ---
 function loadResellerHistory() {
     db.collection("returns").where("resellerId", "==", currentUser.id).onSnapshot(s => {
