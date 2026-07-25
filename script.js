@@ -490,36 +490,43 @@ function goToRedeemStep2() {
     document.getElementById("redeemStep2").classList.remove("hidden"); 
 }
 
+// Handler Submit Form Konfirmasi
 document.getElementById("formRedeemPoints").onsubmit = async (e) => {
-    e.preventDefault(); // Menghindari halaman me-refresh (force close)
-    
+    e.preventDefault(); // WAJIB: Agar halaman tidak reload (force close)
+
     const amount = parseInt(document.getElementById("redeemAmountSelect").value);
-    const nama = document.getElementById("redName").value;
-    const wa = document.getElementById("redWa").value;
+    const namaPenerima = document.getElementById("redName").value;
+    const waPenerima = document.getElementById("redWa").value;
+    const adminWA = "62895345452412"; 
+
+    if (currentPointsVal < amount) {
+        alert("Poin Anda tidak cukup!");
+        return;
+    }
 
     try {
-        // Simpan ke database Firestore Admin
+        // Simpan ke database
         await db.collection("redemptions").add({
             resellerId: currentUser.id,
             resellerName: currentUser.nama,
             points: amount,
-            namaPenerima: nama,
-            whatsapp: wa,
+            namaPenerima: namaPenerima,
+            whatsapp: waPenerima,
             status: "proses",
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
 
-        alert("Berhasil! Permintaan Anda telah dikirim ke Admin.");
-        closeRedeemModal();
-        
         // Format pesan WhatsApp
-        const pesan = `*KONFIRMASI TUKAR POIN*%0A--------------------------%0A*Nama:* ${nama}%0A*ID User:* ${currentUser.customId}%0A*Nominal:* ${amount.toLocaleString('id-ID')} Poin%0A*No. WA:* ${wa}%0A--------------------------%0AMohon segera diproses admin.`;
-        
-        // Buka WhatsApp Admin
-        window.open(`https://wa.me/62895345452412?text=${pesan}`, '_blank');
+        const pesanWA = `*KONFIRMASI TUKAR POIN*%0A Nama: ${namaPenerima}%0A Nominal: ${amount.toLocaleString('id-ID')} Poin%0A WA: ${waPenerima}`;
+
+        alert("Berhasil! Data telah dikirim.");
+        closeRedeemModal();
+
+        // Buka WhatsApp
+        window.open(`https://wa.me/${adminWA}?text=${pesanWA}`, '_blank');
 
     } catch (err) {
-        alert("Gagal mengirim data: " + err.message);
+        alert("Gagal: " + err.message);
     }
 };
 
