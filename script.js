@@ -433,9 +433,19 @@ function renderSidebar() {
 }
     
 function showSection(id) {
+    // Sembunyikan semua section
     document.querySelectorAll('.app-section').forEach(s => s.classList.add('hidden'));
-    document.getElementById(id).classList.remove('hidden');
+    
+    // Tampilkan section yang dipilih
+    const targetSection = document.getElementById(id);
+    if (targetSection) {
+        targetSection.classList.remove('hidden');
+    }
+
+    // Pemicu Load Data berdasarkan menu yang dibuka
     if(id === 'secAdminActivation') loadActivationList();
+    if(id === 'secAdminRankings') loadRankings(); // <-- INI YANG TADI KURANG
+    
     toggleSidebar(false);
 }
 
@@ -479,3 +489,57 @@ function goToStep1() { document.getElementById("orderStep1").classList.remove("h
 document.getElementById("editProfileForm").onsubmit = async (e) => { e.preventDefault(); await db.collection("users").doc(currentUser.id).update({ nama: document.getElementById("profNama").value, hp: document.getElementById("profHp").value }); alert("Updated!"); };
 document.getElementById("resellerReturnForm").onsubmit = async (e) => { e.preventDefault(); await db.collection("returns").add({ resellerId: currentUser.id, nama: currentUser.nama, produk: document.getElementById("retProd").value, alasan: document.getElementById("retReason").value, hp: document.getElementById("retHp").value, status: "proses", createdAt: firebase.firestore.FieldValue.serverTimestamp() }); alert("Dikirim!"); e.target.reset(); };
 document.getElementById("resellerComplaintForm").onsubmit = async (e) => { e.preventDefault(); await db.collection("complaints").add({ resellerId: currentUser.id, nama: document.getElementById("compNama").value, hp: document.getElementById("compHp").value, pesan: document.getElementById("compText").value, status: "proses", createdAt: firebase.firestore.FieldValue.serverTimestamp() }); alert("Dikirim!"); e.target.reset(); };
+
+async function loadRankings() {
+    try {
+        const tableBody = document.getElementById("adminRankTable");
+        if (!tableBody) return;
+
+        // Tampilkan loading sementara
+        tableBody.innerHTML = '<tr><td colspan="4" style="text-align:center">Memuat data...</td></tr>';
+
+        // Ambil semua reseller
+        const us = await db.collection("users").where("role", "==", "reseller").get();
+        // Ambil semua order yang sudah selesai
+        const os = await db.collection("orders").where("status", "==", "Selesai").get();
+        
+        const allOrders = os.docs.map(d => d.data());
+        
+        let ranks = us.docs.map(u => {
+            const userData = u.data();
+            const userId = u.id;
+            
+            // Filter order berdasarkan reseller ini
+            const userOrders = allOrders.filter(o => o.resellerId === userId);
+            
+            // Hitung total belanja
+            const total = userOrders.reduce((s, o) => s + (o.total || 0), 0);
+            
+            return { 
+                nama: userData.nama || 'Tanpa Nama', 
+                total: total, 
+                poin: Math.floor(total / 100) 
+            };
+        });
+
+        // Urutkan dari total terbesar ke terkecil
+        ranks.sort((a, b) => b.total - a.total);
+
+        // Masukkan ke tabel
+        if (ranks.length > 0) {
+            tableBody.innerHTML = ranks.map((r, i) => `
+                <tr>
+                    <td style="text-align:center">${i + 1}</td>
+                    <td><b>${r.nama}</b></td>
+                    <td>${r.poin.toLocaleString('id-ID')}</td>
+                    <td>Rp ${r.total.toLocaleString('id-ID')}</td>
+                </tr>
+            `).join('');
+        } else {
+            tableBody.innerHTML = '<tr><td colspan="4" style="text-align:center">Belum ada data reseller atau penjualan.</td></tr>';
+        }
+    } catch (err) {
+        console.error("Gagal memuat peringkat:", err);
+        document.getElementById("adminRankTable").innerHTML = '<tr><td colspan="4" style="text-align:center; color:red;">Gagal mengambil data.</td></tr>';
+    }
+}
