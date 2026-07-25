@@ -458,21 +458,64 @@ function loadActivationList() {
     });
 }
 
-function openRedeemModal() { document.getElementById("redeemModal").classList.remove("hidden"); goToRedeemStep1(); }
-function closeRedeemModal() { document.getElementById("redeemModal").classList.add("hidden"); }
-function goToRedeemStep1() { document.getElementById("redeemStep1").classList.remove("hidden"); document.getElementById("redeemStep2").classList.add("hidden"); }
-function goToRedeemStep2() { if(currentPointsVal < document.getElementById("redeemAmountSelect").value) return alert("Poin Kurang!"); document.getElementById("redeemStep1").classList.add("hidden"); document.getElementById("redeemStep2").classList.remove("hidden"); }
+function openRedeemModal() {
+    document.getElementById("redeemModal").classList.remove("hidden");
+    document.getElementById("displayMyPoints").innerText = currentPointsVal.toLocaleString('id-ID');
+    goToRedeemStep1();
+}
 
+function closeRedeemModal() {
+    document.getElementById("redeemModal").classList.add("hidden");
+}
+
+function goToRedeemStep1() {
+    document.getElementById("redeemStep1").classList.remove("hidden");
+    document.getElementById("redeemStep2").classList.add("hidden");
+}
+
+function goToRedeemStep2() {
+    const amount = parseInt(document.getElementById("redeemAmountSelect").value);
+    
+    if (currentPointsVal < amount) {
+        alert("Maaf, poin Anda tidak cukup untuk menukar nominal ini.");
+        return;
+    }
+
+// Otomatis isi Nama dan HP dari data profil login
+    document.getElementById("redName").value = currentUser.nama || "";
+    document.getElementById("redWa").value = currentUser.hp || "";
+
+    document.getElementById("redeemStep1").classList.add("hidden");
+    document.getElementById("redeemStep2").classList.remove("hidden");
+}
+
+// Handler Submit Form (Memperbaiki Tombol Tukar yang Tidak Berfungsi)
 document.getElementById("formRedeemPoints").onsubmit = async (e) => {
-    e.preventDefault(); 
-    await db.collection("redemptions").add({ 
-        resellerId: currentUser.id, resellerName: currentUser.nama, 
-        points: parseInt(document.getElementById("redeemAmountSelect").value), 
-        status: "proses", createdAt: firebase.firestore.FieldValue.serverTimestamp() 
-    });
-    alert("Permintaan Terkirim!"); closeRedeemModal();
-};
+    e.preventDefault();
+    
+    const amount = parseInt(document.getElementById("redeemAmountSelect").value);
+    const nama = document.getElementById("redName").value;
+    const wa = document.getElementById("redWa").value;
 
+    try {
+        await db.collection("redemptions").add({
+            resellerId: currentUser.id,
+            resellerName: currentUser.nama,
+            points: amount,
+            namaPenerima: nama,
+            whatsapp: wa,
+            status: "proses",
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        alert("Permintaan tukar poin berhasil dikirim! Admin akan segera memproses.");
+        closeRedeemModal();
+    } catch (error) {
+        console.error("Error redeem:", error);
+        alert("Gagal mengirim permintaan: " + error.message);
+    }
+};
+    
 function logout() { auth.signOut(); }
 function toggleSidebar(f) { document.getElementById("sidebar").classList.toggle("active", f); document.getElementById("sidebarOverlay").classList.toggle("active", f); }
 function switchAuth(m) {
