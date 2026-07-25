@@ -234,24 +234,14 @@ function loadAdminData() {
     });
 
     // Tabel Penukaran Poin Admin (Sudah diperbaiki posisinya)
+    // Cari bagian ini dan pastikan diakhiri dengan tanda } 
     db.collection("redemptions").onSnapshot(snap => {
-    // Menghitung jumlah penukaran yang masih 'proses' untuk badge
-    const totalPending = snap.docs.filter(d => d.data().status === 'proses').length;
-    // (Opsional) jika Anda punya elemen badge di header admin:
-    // document.getElementById("badgeRedeem").innerText = totalPending; 
-
-    document.getElementById("adminRedeemTable").innerHTML = snap.docs.map(d => {
-        const r = d.data();
-        return `<tr>
-            <td><b>${r.resellerName || 'User'}</b><br><small>${r.namaPenerima || '-'}</small></td>
-            <td>${(r.points || 0).toLocaleString()}</td>
-            <td>${r.status === 'proses' ? 
-                `<button onclick="updateStat('redemptions','${d.id}')" style="background:#F2A93B; color:white; border:none; padding:5px; border-radius:4px;">Selesai</button>` 
-                : '✅'}</td>
-        </tr>`;
-    }).join('') || '<tr><td colspan="3" style="text-align:center">Belum ada penukaran</td></tr>';
-});
-}
+        document.getElementById("adminRedeemTable").innerHTML = snap.docs.map(d => {
+            const r = d.data();
+            return `<tr><td><b>${r.resellerName}</b><br><small>${r.namaPenerima || '-'}</small></td><td>${(r.points || 0).toLocaleString()}</td><td>${r.status === 'proses' ? `<button onclick="updateStat('redemptions','${d.id}')">Selesai</button>` : '✅'}</td></tr>`;
+        }).join('') || '<tr><td colspan="3" style="text-align:center">Belum ada penukaran</td></tr>';
+    });
+} // <--- PASTIKAN ADA TANDA INI UNTUK MENUTUP FUNGSI loadAdminData
 // --- FUNGSI-FUNGSI LAINNYA (TETAP SAMA NAMUN DIRAPIKAN) ---
 function loadResellerHistory() {
     db.collection("returns").where("resellerId", "==", currentUser.id).onSnapshot(s => {
@@ -481,21 +471,57 @@ function goToRedeemStep1() {
     document.getElementById("redeemStep2").classList.add("hidden");
 }
 
-function goToRedeemStep2() {
-    const amount = parseInt(document.getElementById("redeemAmountSelect").value);
+function goToRedeemStep2() { 
+    // Ambil nominal yang dipilih reseller
+    const nominal = parseInt(document.getElementById("redeemAmountSelect").value);
     
-    if (currentPointsVal < amount) {
-        alert("Maaf, poin Anda tidak cukup untuk menukar nominal ini.");
+    // Validasi: Apakah poin reseller cukup?
+    if(currentPointsVal < nominal) {
+        alert("Maaf, poin Anda tidak cukup untuk menukar nominal ini!");
         return;
     }
-
-// Otomatis isi Nama dan HP dari data profil login
-    document.getElementById("redName").value = currentUser.nama || "";
-    document.getElementById("redWa").value = currentUser.hp || "";
-
-    document.getElementById("redeemStep1").classList.add("hidden");
-    document.getElementById("redeemStep2").classList.remove("hidden");
+    
+    // Otomatis isi Nama dan HP reseller agar mereka tidak perlu mengetik
+    if (document.getElementById("redName")) document.getElementById("redName").value = currentUser.nama || "";
+    if (document.getElementById("redWa")) document.getElementById("redWa").value = currentUser.hp || "";
+    
+    // Pindah tampilan dari pilihan poin ke form konfirmasi
+    document.getElementById("redeemStep1").classList.add("hidden"); 
+    document.getElementById("redeemStep2").classList.remove("hidden"); 
 }
+
+document.getElementById("formRedeemPoints").onsubmit = async (e) => {
+    e.preventDefault(); // Menghindari halaman me-refresh (force close)
+    
+    const amount = parseInt(document.getElementById("redeemAmountSelect").value);
+    const nama = document.getElementById("redName").value;
+    const wa = document.getElementById("redWa").value;
+
+    try {
+        // Simpan ke database Firestore Admin
+        await db.collection("redemptions").add({
+            resellerId: currentUser.id,
+            resellerName: currentUser.nama,
+            points: amount,
+            namaPenerima: nama,
+            whatsapp: wa,
+            status: "proses",
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        alert("Berhasil! Permintaan Anda telah dikirim ke Admin.");
+        closeRedeemModal();
+        
+        // Format pesan WhatsApp
+        const pesan = `*KONFIRMASI TUKAR POIN*%0A--------------------------%0A*Nama:* ${nama}%0A*ID User:* ${currentUser.customId}%0A*Nominal:* ${amount.toLocaleString('id-ID')} Poin%0A*No. WA:* ${wa}%0A--------------------------%0AMohon segera diproses admin.`;
+        
+        // Buka WhatsApp Admin
+        window.open(`https://wa.me/62895345452412?text=${pesan}`, '_blank');
+
+    } catch (err) {
+        alert("Gagal mengirim data: " + err.message);
+    }
+};
 
 // Handler Submit Form (Memperbaiki Tombol Tukar yang Tidak Berfungsi)
 document.getElementById("formRedeemPoints").onsubmit = async (e) => {
