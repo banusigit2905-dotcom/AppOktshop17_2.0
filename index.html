@@ -303,9 +303,47 @@
     </div>
 
     <!-- MODALS -->
-    <div id="redeemModal" class="hidden modal-overlay"><div class="modal-box"><h3>🎁 Tukar Poin</h3><p>Poin Anda: <span id="displayMyPoints">0</span></p><select id="redeemAmountSelect" class="styled-input"><option value="25000">25k</option><option value="50000">50k</option><option value="100000">100k</option></select><button onclick="goToRedeemStep2()" class="btn-primary">LANJUT</button><button onclick="closeRedeemModal()" class="btn-secondary">BATAL</button><div id="redeemStep2" class="hidden"><form id="formRedeemPoints"><input type="text" id="redName" placeholder="Nama" required class="styled-input"><input type="tel" id="redWa" placeholder="WA" required class="styled-input"><button type="submit" class="btn-primary">TUKAR</button></form></div></div></div>
-    <div id="orderModal" class="hidden modal-overlay"><div class="modal-box"><div id="orderStep1"><h3>🛒 Produk</h3><select id="ordCatSelect" class="styled-input" onchange="filterProductsByCategory()"></select><select id="ordProdSelect" class="styled-input"></select><input type="number" id="ordQtyInput" value="1" min="1" class="styled-input"><button onclick="addToCart()" class="btn-primary">TAMBAH</button><table><tbody id="cartTableBody"></tbody></table><div id="cartTotalText">Total: Rp 0</div><button onclick="goToStep2()" class="btn-primary">PESAN</button><button onclick="closeOrderModal()" class="btn-secondary">BATAL</button></div><div id="orderStep2" class="hidden"><h3>Penerima</h3><form id="orderFormFinal"><input type="text" id="ordCustomer" placeholder="Nama" required class="styled-input"><input type="tel" id="ordHp" placeholder="No HP" required class="styled-input"><select id="ordPayment" class="styled-input"><option value="Transfer">Transfer</option><option value="COD">COD</option></select><button type="submit" class="btn-primary">KONFIRMASI WA</button></form></div></div></div>
+    <!-- MODAL REDEEM POIN -->
+<div id="redeemModal" class="hidden modal-overlay">
+    <div class="modal-box">
+        <!-- STEP 1: Pilih Nominal -->
+        <div id="redeemStep1">
+            <h3>🎁 Tukar Poin</h3>
+            <p>Poin Anda: <span id="displayMyPoints" style="font-weight: bold; color: #d4af37;">0</span></p>
+            
+            <label style="font-size: 11px; display: block; margin-bottom: 5px;">Pilih Nominal Penukaran:</label>
+            <select id="redeemAmountSelect" class="styled-input">
+                <option value="25000">25.000</option>
+                <option value="50000">50.000</option>
+                <option value="100000">100.000</option>
+                <option value="200000">200.000</option>
+                <option value="300000">300.000</option>
+                <option value="400000">400.000</option>
+                <option value="500000">500.000</option>
+                <option value="600000">600.000</option>
+                <option value="700000">700.000</option>
+                <option value="800000">800.000</option>
+                <option value="900000">900.000</option>
+                <option value="1000000">1.000.000</option>
+            </select>
+            
+            <button onclick="goToRedeemStep2()" class="btn-primary" style="margin-top: 10px;">LANJUT</button>
+            <button onclick="closeRedeemModal()" class="btn-secondary">BATAL</button>
+        </div>
 
+        <!-- STEP 2: Konfirmasi Data -->
+        <div id="redeemStep2" class="hidden">
+            <h3>Konfirmasi Data</h3>
+            <p style="font-size: 12px; margin-bottom: 10px;">Pastikan nomor WhatsApp Anda benar untuk pengiriman voucher.</p>
+            <form id="formRedeemPoints">
+                <input type="text" id="redName" placeholder="Nama Lengkap" required class="styled-input">
+                <input type="tel" id="redWa" placeholder="No WhatsApp (Aktif)" required class="styled-input">
+                <button type="submit" class="btn-primary">TUKAR SEKARANG</button>
+                <button type="button" onclick="goToRedeemStep1()" class="btn-secondary">KEMBALI</button>
+            </form>
+        </div>
+    </div>
+</div>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
