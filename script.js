@@ -235,14 +235,22 @@ function loadAdminData() {
 
     // Tabel Penukaran Poin Admin (Sudah diperbaiki posisinya)
     db.collection("redemptions").onSnapshot(snap => {
-        if (!loadRedeems) snap.docChanges().forEach(c => { if(c.type === "added") ping.play().catch(e=>{}); });
-        loadRedeems = false;
-        document.getElementById("adminRedeemTable").innerHTML = snap.docs.map(d => {
-            const r = d.data();
-            return `<tr><td><b>${r.resellerName}</b></td><td>${r.points.toLocaleString()}</td><td>${r.status === 'proses' ? `<button onclick="updateStat('redemptions','${d.id}')">Selesai</button>` : '✅'}</td></tr>`;
-        }).join('');
-    });
-}
+    // Menghitung jumlah penukaran yang masih 'proses' untuk badge
+    const totalPending = snap.docs.filter(d => d.data().status === 'proses').length;
+    // (Opsional) jika Anda punya elemen badge di header admin:
+    // document.getElementById("badgeRedeem").innerText = totalPending; 
+
+    document.getElementById("adminRedeemTable").innerHTML = snap.docs.map(d => {
+        const r = d.data();
+        return `<tr>
+            <td><b>${r.resellerName || 'User'}</b><br><small>${r.namaPenerima || '-'}</small></td>
+            <td>${(r.points || 0).toLocaleString()}</td>
+            <td>${r.status === 'proses' ? 
+                `<button onclick="updateStat('redemptions','${d.id}')" style="background:#F2A93B; color:white; border:none; padding:5px; border-radius:4px;">Selesai</button>` 
+                : '✅'}</td>
+        </tr>`;
+    }).join('') || '<tr><td colspan="3" style="text-align:center">Belum ada penukaran</td></tr>';
+});
 
 // --- FUNGSI-FUNGSI LAINNYA (TETAP SAMA NAMUN DIRAPIKAN) ---
 function loadResellerHistory() {
@@ -492,27 +500,55 @@ function goToRedeemStep2() {
 // Handler Submit Form (Memperbaiki Tombol Tukar yang Tidak Berfungsi)
 document.getElementById("formRedeemPoints").onsubmit = async (e) => {
     e.preventDefault();
-    
+
+    // 1. Ambil data dari input
     const amount = parseInt(document.getElementById("redeemAmountSelect").value);
-    const nama = document.getElementById("redName").value;
-    const wa = document.getElementById("redWa").value;
+    const namaPenerima = document.getElementById("redName").value;
+    const waPenerima = document.getElementById("redWa").value;
+    const adminWA = "62895345452412"; // Sesuaikan dengan nomor admin Anda
+
+    // 2. Validasi Poin Sekali Lagi (Keamanan)
+    if (currentPointsVal < amount) {
+        alert("Poin Anda tidak cukup!");
+        return;
+    }
 
     try {
+        // 3. Simpan data ke Firestore agar masuk ke Tabel Admin
         await db.collection("redemptions").add({
             resellerId: currentUser.id,
-            resellerName: currentUser.nama,
+            resellerName: currentUser.nama, // Nama akun reseller
             points: amount,
-            namaPenerima: nama,
-            whatsapp: wa,
+            namaPenerima: namaPenerima,   // Nama di form konfirmasi
+            whatsapp: waPenerima,         // WA di form konfirmasi
             status: "proses",
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
 
-        alert("Permintaan tukar poin berhasil dikirim! Admin akan segera memproses.");
+        // 4. Siapkan format pesan WhatsApp
+        const pesanWA = `*--- PENUKARAN POIN OKTSHOP17 ---*%0A%0A` +
+                        `*Data Reseller:*%0A` +
+                        `Nama Akun: ${currentUser.nama}%0A` +
+                        `ID User: ${currentUser.customId || '-'}%0A%0A` +
+                        `*Detail Penukaran:*%0A` +
+                        `Nominal: ${amount.toLocaleString('id-ID')} Poin%0A` +
+                        `Nama Penerima: ${namaPenerima}%0A` +
+                        `No. WA: ${waPenerima}%0A%0A` +
+                        `----------------------------------%0A` +
+                        ` Mohon segera diproses ya Admin!`;
+
+        // 5. Beri notifikasi berhasil
+        alert("Permintaan penukaran berhasil disimpan!");
+
+        // 6. Tutup Modal
         closeRedeemModal();
-    } catch (error) {
-        console.error("Error redeem:", error);
-        alert("Gagal mengirim permintaan: " + error.message);
+
+        // 7. Redirect ke WhatsApp Admin
+        window.open(`https://wa.me/${adminWA}?text=${pesanWA}`, '_blank');
+
+    } catch (err) {
+        console.error("Gagal menukar poin:", err);
+        alert("Terjadi kesalahan: " + err.message);
     }
 };
     
