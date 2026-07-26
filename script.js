@@ -120,7 +120,8 @@ function loadResellerData() {
         db.collection("redemptions").where("resellerId", "==", currentUser.id).where("status", "==", "Selesai").onSnapshot(sRedeems => {
             
             let totalSpendingAllTime = 0;
-            let qtyToday = 0;
+            let totalTodayRupiah = 0; // Variabel untuk menampung rupiah hari ini
+            
             const todayStart = new Date().setHours(0, 0, 0, 0);
             const todayEnd = new Date().setHours(23, 59, 59, 999);
 
@@ -128,14 +129,15 @@ function loadResellerData() {
             
             allDocs.forEach(d => {
                 const o = d.data();
-                const createdTime = o.createdAt?.toDate().getTime();
+                const createdTime = o.createdAt ? o.createdAt.toDate().getTime() : 0;
 
                 if(o.status === 'Selesai') { 
+                    // 1. Tambahkan ke total belanja selamanya (untuk hitung poin)
                     totalSpendingAllTime += (o.total || 0); 
                     
-                    // Hitung QTY hanya untuk pesanan hari ini yang Selesai
+                    // 2. Logika Rupiah Hari Ini: Cek jika tanggalnya hari ini
                     if (createdTime >= todayStart && createdTime <= todayEnd) {
-                        qtyToday += (o.jumlah || 0);
+                        totalTodayRupiah += (o.total || 0); // Menjumlahkan field 'total' (Rupiah)
                     }
                 }
             });
@@ -145,12 +147,18 @@ function loadResellerData() {
             sRedeems.docs.forEach(d => { usedPoints += (d.data().points || 0); });
             currentPointsVal = Math.floor(totalSpendingAllTime / 100) - usedPoints;
 
-            // Update UI Kotak Statistik
-            document.getElementById("resQtyToday").innerText = qtyToday.toLocaleString('id-ID');
+            // --- UPDATE UI KOTAK STATISTIK ---
+            // Update Kotak 1: Belanja Hari Ini (Rupiah)
+            const resTotalTodayElem = document.getElementById("resTotalToday");
+            if(resTotalTodayElem) {
+                resTotalTodayElem.innerText = "Rp " + totalTodayRupiah.toLocaleString('id-ID');
+            }
+
+            // Update Kotak 3: Poinku
             document.getElementById("resPoin").innerText = currentPointsVal.toLocaleString('id-ID');
             document.getElementById("displayMyPoints").innerText = currentPointsVal.toLocaleString('id-ID');
 
-            // Logika Tabel Riwayat (tetap menggunakan filter tanggal jika ada)
+            // --- LOGIKA TABEL RIWAYAT ---
             let filteredDocs = [];
             if (startDate && endDate) {
                 const startRange = new Date(startDate).setHours(0, 0, 0, 0);
@@ -160,7 +168,7 @@ function loadResellerData() {
                     return created >= startRange && created <= endRange;
                 });
             } else {
-                // Default tampilkan order hari ini di tabel
+                // Default tabel menampilkan pesanan hari ini
                 filteredDocs = allDocs.filter(d => {
                     const created = d.data().createdAt?.toDate().getTime();
                     return created >= todayStart && created <= todayEnd;
