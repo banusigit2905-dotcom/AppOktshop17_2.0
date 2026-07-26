@@ -120,24 +120,26 @@ function loadResellerData() {
         db.collection("redemptions").where("resellerId", "==", currentUser.id).where("status", "==", "Selesai").onSnapshot(sRedeems => {
             
             let totalSpendingAllTime = 0;
-            let totalTodayRupiah = 0; // Variabel untuk menampung rupiah hari ini
+            let totalTodayRupiah = 0;
             
-            const todayStart = new Date().setHours(0, 0, 0, 0);
-            const todayEnd = new Date().setHours(23, 59, 59, 999);
+            const now = new Date();
+            const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+            const todayEnd = todayStart + (24 * 60 * 60 * 1000) - 1;
 
-            let allDocs = sOrders.docs.sort((a, b) => (b.data().createdAt?.seconds || 0) - (a.data().createdAt?.seconds || 0));
+            // Mengambil semua dokumen dan mengurutkan berdasarkan waktu terbaru
+            let allDocs = sOrders.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            allDocs.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
             
-            allDocs.forEach(d => {
-                const o = d.data();
-                const createdTime = o.createdAt ? o.createdAt.toDate().getTime() : 0;
+            allDocs.forEach(o => {
+                // Penanganan Timestamp null (saat baru checkout)
+                const createdDate = o.createdAt ? o.createdAt.toDate() : new Date();
+                const createdTime = createdDate.getTime();
 
                 if(o.status === 'Selesai') { 
-                    // 1. Tambahkan ke total belanja selamanya (untuk hitung poin)
                     totalSpendingAllTime += (o.total || 0); 
                     
-                    // 2. Logika Rupiah Hari Ini: Cek jika tanggalnya hari ini
                     if (createdTime >= todayStart && createdTime <= todayEnd) {
-                        totalTodayRupiah += (o.total || 0); // Menjumlahkan field 'total' (Rupiah)
+                        totalTodayRupiah += (o.total || 0);
                     }
                 }
             });
@@ -147,44 +149,56 @@ function loadResellerData() {
             sRedeems.docs.forEach(d => { usedPoints += (d.data().points || 0); });
             currentPointsVal = Math.floor(totalSpendingAllTime / 100) - usedPoints;
 
-            // --- UPDATE UI KOTAK STATISTIK ---
-            // Update Kotak 1: Belanja Hari Ini (Rupiah)
+            // Update UI Kotak Statistik
             const resTotalTodayElem = document.getElementById("resTotalToday");
             if(resTotalTodayElem) {
                 resTotalTodayElem.innerText = "Rp " + totalTodayRupiah.toLocaleString('id-ID');
             }
-
-            // Update Kotak 3: Poinku
             document.getElementById("resPoin").innerText = currentPointsVal.toLocaleString('id-ID');
             document.getElementById("displayMyPoints").innerText = currentPointsVal.toLocaleString('id-ID');
 
-            // --- LOGIKA TABEL RIWAYAT ---
+            // --- LOGIKA FILTER TABEL ---
             let filteredDocs = [];
             if (startDate && endDate) {
+                // Jika user memilih tanggal manual
                 const startRange = new Date(startDate).setHours(0, 0, 0, 0);
                 const endRange = new Date(endDate).setHours(23, 59, 59, 999);
-                filteredDocs = allDocs.filter(d => {
-                    const created = d.data().createdAt?.toDate().getTime();
-                    return created >= startRange && created <= endRange;
+                filteredDocs = allDocs.filter(o => {
+                    const time = o.createdAt ? o.createdAt.toDate().getTime() : Date.now();
+                    return time >= startRange && time <= endRange;
                 });
             } else {
-                // Default tabel menampilkan pesanan hari ini
-                filteredDocs = allDocs.filter(d => {
-                    const created = d.data().createdAt?.toDate().getTime();
-                    return created >= todayStart && created <= todayEnd;
+                // Default: Tampilkan 10 transaksi terakhir (agar data baru Checkout langsung terlihat)
+                // ATAU tetap tampilkan hari ini saja
+                filteredDocs = allDocs.filter(o => {
+                    const time = o.createdAt ? o.createdAt.toDate().getTime() : Date.now();
+                    return time >= todayStart && time <= todayEnd;
                 });
+                
+                // Jika hari ini belum ada transaksi, tampilkan semua agar tabel tidak kosong
+                if(filteredDocs.length === 0) {
+                    filteredDocs = allDocs.slice(0, 10);
+                }
             }
 
+            // Render ke Tabel
             const tableBody = document.getElementById("resellerOrderTable");
-            tableBody.innerHTML = filteredDocs.map(d => {
-                const o = d.data();
-                return `<tr>
-                    <td><small style="font-weight:bold; color:#d4af37;">${o.orderId || '-'}</small></td>
-                    <td>${o.produk}</td>
-                    <td>Rp ${o.total.toLocaleString('id-ID')}</td>
-                    <td><span style="color:${o.status==='Selesai'?'green':'orange'}; font-weight:800;">${o.status}</span></td>
-                </tr>`;
-            }).join('') || '<tr><td colspan="4" style="text-align:center; padding:20px;">Tidak ada pesanan.</td></tr>';
+            if (filteredDocs.length > 0) {
+                tableBody.innerHTML = filteredDocs.map(o => {
+                    let statusColor = "#f39c12"; // Orange (pending)
+                    if(o.status === 'Selesai') statusColor = "#27ae60"; // Hijau
+                    if(o.status === 'Dibatalkan') statusColor = "#c0392b"; // Merah
+
+                    return `<tr>
+                        <td><small style="font-weight:bold; color:#d4af37;">${o.orderId || 'PROSES'}</small></td>
+                        <td>${o.produk}</td>
+                        <td>Rp ${(o.total || 0).toLocaleString('id-ID')}</td>
+                        <td><span style="color:${statusColor}; font-weight:800;">${o.status || 'pending'}</span></td>
+                    </tr>`;
+                }).join('');
+            } else {
+                tableBody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px; color:#666;">Belum ada pesanan.</td></tr>';
+            }
         });
     });
 }
