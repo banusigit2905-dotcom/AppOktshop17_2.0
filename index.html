@@ -72,15 +72,29 @@
                 <div class="welcome-container">Halo, <span id="userGreetName">User</span>! 👋</div>
 
                 <!-- DASHBOARD RESELLER -->
-                <!-- DASHBOARD RESELLER -->
 <section id="secResellerDashboard" class="app-section hidden">
     
     <!-- Bagian Stat Card (Paling Atas) -->
-    <div class="stat-grid">
-        <div class="stat-card c1"><div>QTY (TOTAL)</div><div id="resQty" class="stat-value">0</div></div>
-        <div class="stat-card c2"><div>TOTAL BELANJA</div><div id="resTotal" class="stat-value">Rp 0</div></div>
-        <div class="stat-card c3"><div>POINKU</div><div id="resPoin" class="stat-value">0</div></div>
+<!-- Bagian Stat Card Dashboard Reseller -->
+<div class="stat-grid">
+    <!-- Kotak 1: Belanja Hari Ini -->
+    <div class="stat-card c1">
+        <div>BELANJA HARI INI</div>
+        <div id="resQtyToday" class="stat-value">0</div>
     </div>
+    
+    <!-- Kotak 2: Peringkat Kamu -->
+    <div class="stat-card c2">
+        <div>PERINGKAT KAMU</div>
+        <div id="resMyRank" class="stat-value">-</div>
+    </div>
+    
+    <!-- Kotak 3: Poinku (Tetap) -->
+    <div class="stat-card c3">
+        <div>POINKU</div>
+        <div id="resPoin" class="stat-value">0</div>
+    </div>
+</div>
 
     <!-- KARTU 1: RIWAYAT PESANAN -->
     <div class="card card-border">
