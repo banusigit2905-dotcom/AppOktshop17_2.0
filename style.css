@@ -239,3 +239,33 @@ tbody tr td[style*="text-align:center"] { text-align: center !important; }
         width: 48% !important; /* Bagi dua kolom di PC */
     }
 }
+/* Tombol Aksi Admin saat Masih Pending */
+.btn-adm-action {
+    background: #f39c12;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 10px;
+    font-weight: bold;
+}
+
+/* Tombol Aksi Admin saat Sudah Selesai (Warna Hijau) */
+.btn-adm-done {
+    background: #27ae60 !important; /* Warna Hijau */
+    color: white !important;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: bold;
+    cursor: default;
+    opacity: 1 !important;
+}
+
+/* Tambahan: Agar tampilan No Order di Reseller rapi */
+td small {
+    display: block;
+    line-height: 1.2;
+}
