@@ -232,7 +232,15 @@ function loadAdminData() {
             </tr>`;
         }).join('') || '<tr><td colspan="4" style="text-align:center">Kosong</td></tr>';
     });
-
+    
+db.collection("redemptions").where("status", "==", "proses").onSnapshot(snap => {
+        const badgeRedeem = document.getElementById("badgeRedeem");
+        if(badgeRedeem) {
+            badgeRedeem.innerText = snap.size;
+            // Jika ada data masuk (>0), badge berwarna merah, jika 0 transparan/abu
+            badgeRedeem.style.display = snap.size > 0 ? "block" : "none";
+        }
+    });
     // Tabel Penukaran Poin Admin (Sudah diperbaiki posisinya)
     // Cari bagian ini dan pastikan diakhiri dengan tanda } 
     db.collection("redemptions").onSnapshot(snap => {
