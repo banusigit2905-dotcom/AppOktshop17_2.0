@@ -238,3 +238,7 @@ tbody tr td[style*="text-align:center"] { text-align: center !important; }
         width: 48%; /* Bagi dua kolom di komputer */
     }
 }
+.table-container table {
+    width: 100%;
+    margin: 0 auto; /* Mengetengahkan tabel di dalam kartu */
+}
