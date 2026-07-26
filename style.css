@@ -212,30 +212,30 @@ tbody tr td[style*="text-align:center"] { text-align: center !important; }
     color: var(--text-dark);
 }
 /* Memastikan kontainer dashboard menyusun kartu secara vertikal di HP */
-/* Memastikan kontainer dashboard menyusun kartu secara vertikal di HP */
+/* Tampilan Default (Untuk HP/Mobile) */
 #secResellerDashboard {
     display: flex;
     flex-direction: column; /* Menyusun ke bawah */
-    gap: 15px; /* Jarak antar kartu */
+    gap: 15px;
     width: 100%;
 }
 
-/* Memastikan setiap kartu mengambil lebar penuh */
-.card {
+/* Pastikan kartu memenuhi lebar layar HP */
+#secResellerDashboard .card {
     width: 100% !important;
-    box-sizing: border-box;
-    margin-bottom: 10px;
+    margin-left: 0;
+    margin-right: 0;
 }
 
-/* Jika Anda ingin tampilan sejajar hanya di layar Komputer saja */
-@media (min-width: 768px) {
+/* Tampilan Khusus Komputer/Tablet (Layar Lebar) */
+@media (min-width: 992px) {
     #secResellerDashboard {
-        flex-direction: row; /* Kembali sejajar di komputer */
+        flex-direction: row; /* Kembali berdampingan di PC */
         flex-wrap: wrap;
-        align-items: flex-start;
+        justify-content: space-between;
     }
     
-    .card {
-        width: 48%; /* Bagi dua kolom di komputer */
+    #secResellerDashboard .card {
+        width: 48% !important; /* Bagi dua kolom di PC */
     }
 }
