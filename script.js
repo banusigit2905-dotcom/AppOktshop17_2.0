@@ -192,36 +192,68 @@ function loadResellerData() {
 
 // --- 2. PERBAIKAN: SYNTAX ERROR DI LOADADMIN DATA ---
 function loadAdminData() {
-    // Badge Notifikasi Aktivasi
+    // Ambil nilai filter
+    const startDate = document.getElementById("filterAdminStart") ? document.getElementById("filterAdminStart").value : null;
+    const endDate = document.getElementById("filterAdminEnd") ? document.getElementById("filterAdminEnd").value : null;
+
+    // 1. Badge Aktivasi (Tetap sama)
     db.collection("users").where("role", "==", "reseller").where("isActive", "==", false).onSnapshot(snap => {
         if(document.getElementById("badgeActivation")) document.getElementById("badgeActivation").innerText = snap.size;
     });
 
-    // Tabel Order Admin
+    // 2. Tabel Order Admin dengan FILTER TANGGAL
     db.collection("orders").onSnapshot(snap => {
-    let pending = 0;
-    let totalBelanja = 0;
-    document.getElementById("adminOrderTable").innerHTML = snap.docs.map(d => {
-        const o = d.data();
-        if(o.status === 'pending') pending++;
-        if(o.status === 'Selesai') totalBelanja += (o.total || 0);
+        let allOrders = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        
+        // Urutkan berdasarkan tanggal terbaru
+        allOrders.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
 
-        // Logika Tombol Selesai (Jika Selesai maka Hijau)
-        const btnAction = o.status === 'pending' 
-            ? `<button onclick="updateStat('orders','${d.id}')" class="btn-adm-action">Selesai</button>` 
-            : `<button class="btn-adm-done" disabled>✅ Selesai</button>`;
+        let filteredOrders = allOrders;
 
-        return `<tr>
-            <td>${o.resellerName || 'User'}</td>
-            <td><b style="color:#C62828;">${o.orderId || '-'}</b></td>
-            <td>${o.produk || '-'}</td>
-            <td>${btnAction}</td>
-        </tr>`;
-    }).join('');
-        document.getElementById("badgeOrder").innerText = pending;
-        if(document.getElementById("admQty")) document.getElementById("admQty").innerText = snap.size;
-        if(document.getElementById("admTotal")) document.getElementById("admTotal").innerText = "Rp " + totalBelanja.toLocaleString('id-ID');
+        // Logika Filter Tanggal
+        if (startDate && endDate) {
+            const startRange = new Date(startDate).setHours(0, 0, 0, 0);
+            const endRange = new Date(endDate).setHours(23, 59, 59, 999);
+            
+            filteredOrders = allOrders.filter(o => {
+                const created = o.createdAt?.toDate().getTime();
+                return created >= startRange && created <= endRange;
+            });
+        }
+
+        let pendingCount = 0;
+        let totalUangMasuk = 0;
+
+        document.getElementById("adminOrderTable").innerHTML = filteredOrders.map(o => {
+            if(o.status === 'pending') pendingCount++;
+            if(o.status === 'Selesai') totalUangMasuk += (o.total || 0);
+
+            // Format Tanggal untuk tampilan tabel
+            const tgl = o.createdAt ? o.createdAt.toDate().toLocaleDateString('id-ID') : '-';
+
+            const btnAction = o.status === 'pending' 
+                ? `<button onclick="updateStat('orders','${o.id}')" class="btn-adm-action">Selesai</button>` 
+                : `<button class="btn-adm-done" disabled>✅ Selesai</button>`;
+
+            return `<tr>
+                <td>${o.resellerName || 'User'}</td>
+                <td>
+                    <b style="color:#C62828;">${o.orderId || '-'}</b><br>
+                    <small style="font-size:9px; color:#666;">${tgl}</small>
+                </td>
+                <td>${o.produk || '-'}</td>
+                <td>${btnAction}</td>
+            </tr>`;
+        }).join('') || '<tr><td colspan="4" style="text-align:center">Tidak ada data untuk periode ini</td></tr>';
+
+        // Update Stat Card di Dashboard
+        document.getElementById("badgeOrder").innerText = pendingCount;
+        if(document.getElementById("admQty")) document.getElementById("admQty").innerText = filteredOrders.length;
+        if(document.getElementById("admTotal")) document.getElementById("admTotal").innerText = "Rp " + totalUangMasuk.toLocaleString('id-ID');
     });
+
+    // ... (Sisa kode loadAdminData lainnya seperti Returns, Complaints, Redemptions tetap sama)
+}
 
     // Tabel Retur Admin
     db.collection("returns").onSnapshot(snap => {
