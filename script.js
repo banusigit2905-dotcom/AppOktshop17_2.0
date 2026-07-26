@@ -252,22 +252,35 @@ function loadAdminData() {
         }).join('') || '<tr><td colspan="4" style="text-align:center">Kosong</td></tr>';
     });
     
-db.collection("redemptions").where("status", "==", "proses").onSnapshot(snap => {
-        const badgeRedeem = document.getElementById("badgeRedeem");
-        if(badgeRedeem) {
-            badgeRedeem.innerText = snap.size;
-            // Jika ada data masuk (>0), badge berwarna merah, jika 0 transparan/abu
-            badgeRedeem.style.display = snap.size > 0 ? "block" : "none";
+// --- BAGIAN PENUKARAN POIN ADMIN (PERBAIKAN) ---
+db.collection("redemptions").onSnapshot(snap => {
+    let totalPoinKeluar = 0; // Tambahkan variabel penampung
+
+    document.getElementById("adminRedeemTable").innerHTML = snap.docs.map(d => {
+        const r = d.data();
+        
+        // LOGIKA: Jika status penukaran sudah "Selesai", tambahkan ke total poin keluar
+        if (r.status === 'Selesai') {
+            totalPoinKeluar += (r.points || 0);
         }
-    });
-    // Tabel Penukaran Poin Admin (Sudah diperbaiki posisinya)
-    // Cari bagian ini dan pastikan diakhiri dengan tanda } 
-    db.collection("redemptions").onSnapshot(snap => {
-        document.getElementById("adminRedeemTable").innerHTML = snap.docs.map(d => {
-            const r = d.data();
-            return `<tr><td><b>${r.resellerName}</b><br><small>${r.namaPenerima || '-'}</small></td><td>${(r.points || 0).toLocaleString()}</td><td>${r.status === 'proses' ? `<button onclick="updateStat('redemptions','${d.id}')">Selesai</button>` : '✅'}</td></tr>`;
-        }).join('') || '<tr><td colspan="3" style="text-align:center">Belum ada penukaran</td></tr>';
-    });
+
+        const btnAction = r.status === 'proses' 
+            ? `<button onclick="updateStat('redemptions','${d.id}')" style="background:#F2A93B; color:white; border:none; padding:5px; border-radius:4px;">Selesai</button>` 
+            : '✅';
+
+        return `<tr>
+            <td><b>${r.resellerName}</b><br><small>${r.namaPenerima || '-'}</small></td>
+            <td>${(r.points || 0).toLocaleString()}</td>
+            <td>${btnAction}</td>
+        </tr>`;
+    }).join('') || '<tr><td colspan="3" style="text-align:center">Belum ada penukaran</td></tr>';
+
+    // UPDATE ANGKA DI DASHBOARD ADMIN (Ini yang tadi hilang)
+    const admPoinElem = document.getElementById("admPoin");
+    if (admPoinElem) {
+        admPoinElem.innerText = totalPoinKeluar.toLocaleString('id-ID');
+    }
+});
 } // <--- PASTIKAN ADA TANDA INI UNTUK MENUTUP FUNGSI loadAdminData
 // --- FUNGSI-FUNGSI LAINNYA (TETAP SAMA NAMUN DIRAPIKAN) ---
 function loadResellerHistory() {
