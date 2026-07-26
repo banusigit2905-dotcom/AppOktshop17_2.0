@@ -470,42 +470,33 @@ function goToRedeemStep1() {
     document.getElementById("redeemStep1").classList.remove("hidden");
     document.getElementById("redeemStep2").classList.add("hidden");
 }
-
+// Pindahkan ke Step 2 (Konfirmasi Data)
 function goToRedeemStep2() { 
-    // Ambil nominal yang dipilih reseller
     const nominal = parseInt(document.getElementById("redeemAmountSelect").value);
     
-    // Validasi: Apakah poin reseller cukup?
     if(currentPointsVal < nominal) {
         alert("Maaf, poin Anda tidak cukup untuk menukar nominal ini!");
         return;
     }
     
-    // Otomatis isi Nama dan HP reseller agar mereka tidak perlu mengetik
-    if (document.getElementById("redName")) document.getElementById("redName").value = currentUser.nama || "";
-    if (document.getElementById("redWa")) document.getElementById("redWa").value = currentUser.hp || "";
+    // Isi data otomatis dari profil
+    document.getElementById("redName").value = currentUser.nama || "";
+    document.getElementById("redWa").value = currentUser.hp || "";
     
-    // Pindah tampilan dari pilihan poin ke form konfirmasi
     document.getElementById("redeemStep1").classList.add("hidden"); 
     document.getElementById("redeemStep2").classList.remove("hidden"); 
 }
 
-// Handler Submit Form Konfirmasi
+// Handler Tunggal Penukaran Poin (Gantikan semua duplikasi formRedeemPoints.onsubmit)
 document.getElementById("formRedeemPoints").onsubmit = async (e) => {
-    e.preventDefault(); // WAJIB: Agar halaman tidak reload (force close)
+    e.preventDefault(); // Mencegah Force Close/Refresh
 
     const amount = parseInt(document.getElementById("redeemAmountSelect").value);
     const namaPenerima = document.getElementById("redName").value;
     const waPenerima = document.getElementById("redWa").value;
     const adminWA = "62895345452412"; 
 
-    if (currentPointsVal < amount) {
-        alert("Poin Anda tidak cukup!");
-        return;
-    }
-
     try {
-        // Simpan ke database
         await db.collection("redemptions").add({
             resellerId: currentUser.id,
             resellerName: currentUser.nama,
@@ -516,15 +507,11 @@ document.getElementById("formRedeemPoints").onsubmit = async (e) => {
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
 
-        // Format pesan WhatsApp
-        const pesanWA = `*KONFIRMASI TUKAR POIN*%0A Nama: ${namaPenerima}%0A Nominal: ${amount.toLocaleString('id-ID')} Poin%0A WA: ${waPenerima}`;
+        const pesanWA = `*PENUKARAN POIN OKTSHOP17*%0A%0ANama: ${namaPenerima}%0ANominal: ${amount.toLocaleString('id-ID')} Poin%0AWA: ${waPenerima}%0A%0AMohon diproses admin.`;
 
-        alert("Berhasil! Data telah dikirim.");
+        alert("Berhasil! Permintaan Anda telah disimpan.");
         closeRedeemModal();
-
-        // Buka WhatsApp
         window.open(`https://wa.me/${adminWA}?text=${pesanWA}`, '_blank');
-
     } catch (err) {
         alert("Gagal: " + err.message);
     }
