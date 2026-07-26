@@ -79,7 +79,7 @@
     <div class="stat-grid">
         <div class="stat-card c1"><div>QTY (TOTAL)</div><div id="resQty" class="stat-value">0</div></div>
         <div class="stat-card c2"><div>TOTAL BELANJA</div><div id="resTotal" class="stat-value">Rp 0</div></div>
-        <div class="stat-card c3"><div>POIN SAAT INI</div><div id="resPoin" class="stat-value">0</div></div>
+        <div class="stat-card c3"><div>POINKU</div><div id="resPoin" class="stat-value">0</div></div>
     </div>
 
     <!-- KARTU 1: RIWAYAT PESANAN -->
@@ -163,9 +163,8 @@
                 <input type="text" id="ordCustomer" placeholder="Nama Penerima" required>
                 <input type="tel" id="ordHp" placeholder="No. WhatsApp Penerima" required>
                 <select id="ordPayment" class="styled-input">
-                    <option value="Transfer Bank">Transfer Bank</option>
-                    <option value="E-Wallet (Dana/OVO)">E-Wallet (Dana/OVO)</option>
-                    <option value="Tunai">Tunai</option>
+                    <option value="Transfer Bank">Transfer Bank/QRIS</option>
+                    <option value="Tunai">Tunai/COD</option>
                 </select>
                 <button type="submit" class="btn-primary">KONFIRMASI & KIRIM WA</button>
                 <button type="button" onclick="goToStep1()" class="btn-secondary">KEMBALI</button>
