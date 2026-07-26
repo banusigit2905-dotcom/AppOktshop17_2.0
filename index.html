@@ -72,38 +72,81 @@
                 <div class="welcome-container">Halo, <span id="userGreetName">User</span>! 👋</div>
 
                 <!-- DASHBOARD RESELLER -->
-                <section id="secResellerDashboard" class="app-section hidden">
-                   <div class="card card-border">
-                    <div class="stat-grid">
-                        <div class="stat-card c1"><div>QTY (TOTAL)</div><div id="resQty" class="stat-value">0</div></div>
-                        <div class="stat-card c2"><div>TOTAL BELANJA</div><div id="resTotal" class="stat-value">Rp 0</div></div>
-                        <div class="stat-card c3"><div>POIN SAAT INI</div><div id="resPoin" class="stat-value">0</div></div>
-                    </div>
+                <!-- DASHBOARD RESELLER -->
+<section id="secResellerDashboard" class="app-section hidden">
+    
+    <!-- Bagian Stat Card (Paling Atas) -->
+    <div class="stat-grid">
+        <div class="stat-card c1"><div>QTY (TOTAL)</div><div id="resQty" class="stat-value">0</div></div>
+        <div class="stat-card c2"><div>TOTAL BELANJA</div><div id="resTotal" class="stat-value">Rp 0</div></div>
+        <div class="stat-card c3"><div>POIN SAAT INI</div><div id="resPoin" class="stat-value">0</div></div>
+    </div>
 
-                    <div class="card card-border">
-                        <div class="card-header-flex">
-                            <div>
-                                <h3>Riwayat Pesanan</h3>
-                                <small style="font-size: 9px; color: #C62828; display: block;">*Menampilkan order hari ini</small>
-                            <!-- MODAL BUAT PESANAN (Tambahkan ini) -->
+    <!-- KARTU 1: RIWAYAT PESANAN -->
+    <div class="card card-border">
+        <div class="card-header-flex" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <div>
+                <h3 style="margin:0;">Riwayat Pesanan</h3>
+                <small style="font-size: 9px; color: #C62828; display: block;">*Menampilkan order hari ini</small>
+            </div>
+            <!-- TOMBOL CHECKOUT DI SAMPING HEADER -->
+            <button onclick="openOrderModal()" class="btn-checkout">🛒 CHECKOUT</button>
+        </div>
+
+        <!-- FILTER RIWAYAT -->
+        <div class="filter-row">
+            <div style="flex: 1;"><input type="date" id="filterStart" onchange="loadResellerData()" style="width: 100%;"></div>
+            <div style="color: #666; font-size: 11px;">s/d</div>
+            <div style="flex: 1;"><input type="date" id="filterEnd" onchange="loadResellerData()" style="width: 100%;"></div>
+            <button onclick="resetOrderFilter()" class="btn-secondary" style="width: auto; margin:0; padding: 5px 10px; font-size: 10px;">Reset</button>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead><tr><th>Customer</th><th>Produk</th><th>Total</th><th>Status</th></tr></thead>
+                <tbody id="resellerOrderTable"></tbody>
+            </table>
+        </div>
+    </div> <!-- PENUTUP KARTU RIWAYAT -->
+
+    <!-- KARTU 2: PERINGKAT RESELLER (Pindah ke bawah) -->
+    <div class="card card-border">
+        <h3>🏆 Top Peringkat Reseller</h3>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="text-align: center; width: 50px;">No</th> 
+                        <th style="text-align: left;">Nama Reseller</th>
+                        <th style="text-align: right; padding-right: 20px;">Poin</th>
+                    </tr>
+                </thead>
+                <tbody id="resellerLeaderboardTable"></tbody>
+            </table>
+        </div>
+        <div class="pagination-container">
+            <button class="btn-nav" id="prevRank" onclick="changeRankPage(-1)"> < </button>
+            <span class="page-info" id="rankPageInfo">Rangking 1 - 10</span>
+            <button class="btn-nav" id="nextRank" onclick="changeRankPage(1)"> > </button>
+        </div>
+    </div> <!-- PENUTUP KARTU PERINGKAT -->
+
+</section>
+
+<!-- MODAL BUAT PESANAN (Dipindah keluar agar tidak merusak layout) -->
 <div id="orderModal" class="hidden modal-overlay">
     <div class="modal-box">
-        <!-- STEP 1: Pilih Produk -->
         <div id="orderStep1">
             <h3>🛒 Buat Pesanan</h3>
             <div class="form-styled">
                 <label style="font-size: 11px; font-weight: bold;">Kategori</label>
                 <select id="ordCatSelect" onchange="filterProductsByCategory()" class="styled-input"></select>
-                
                 <label style="font-size: 11px; font-weight: bold;">Pilih Produk</label>
                 <select id="ordProdSelect" class="styled-input"></select>
-                
                 <label style="font-size: 11px; font-weight: bold;">Jumlah (QTY)</label>
                 <input type="number" id="ordQtyInput" value="1" min="1" class="styled-input">
-                
                 <button onclick="addToCart()" class="btn-primary" style="background: #2ecc71; margin-bottom: 15px;">+ Tambah ke Keranjang</button>
             </div>
-
             <div class="table-container">
                 <table>
                     <thead><tr><th>Produk</th><th>Subtotal</th><th>Hapus</th></tr></thead>
@@ -111,12 +154,9 @@
                 </table>
             </div>
             <div id="cartTotalText" style="font-weight:bold; margin-top:10px; color: #C62828;">Total: Rp 0</div>
-            
             <button onclick="goToStep2()" class="btn-primary" style="margin-top:10px;">LANJUT KE PENGIRIMAN</button>
             <button onclick="closeOrderModal()" class="btn-secondary">BATAL</button>
         </div>
-
-        <!-- STEP 2: Detail Customer -->
         <div id="orderStep2" class="hidden">
             <h3>📝 Detail Pengiriman</h3>
             <form id="orderFormFinal" class="form-styled">
@@ -133,47 +173,6 @@
         </div>
     </div>
 </div>
-
-                        <!-- FILTER RIWAYAT -->
-                        <div class="filter-row">
-                            <div style="flex: 1;"><input type="date" id="filterStart" onchange="loadResellerData()" style="width: 100%;"></div>
-                            <div style="color: #666; font-size: 11px;">s/d</div>
-                            <div style="flex: 1;"><input type="date" id="filterEnd" onchange="loadResellerData()" style="width: 100%;"></div>
-                            <button onclick="resetOrderFilter()" class="btn-secondary" style="width: auto; margin:0; padding: 5px 10px; font-size: 10px;">Reset</button>
-                        </div>
-
-                        <div class="table-container">
-                            <table>
-                                <thead><tr><th>Customer</th><th>Produk</th><th>Total</th><th>Status</th></tr></thead>
-                                <tbody id="resellerOrderTable"></tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <div class="card card-border">
-    <h3>🏆 Top Peringkat Reseller</h3>
-    <div class="table-container">
-        <table>
-            <thead>
-                <tr>
-                    <!-- No dibuat center -->
-                    <th style="text-align: center; width: 50px;">No</th> 
-                    <!-- Nama dibuat kiri -->
-                    <th style="text-align: left;">Nama Reseller</th>
-                    <!-- Poin dibuat kanan agar rapi -->
-                    <th style="text-align: right; padding-right: 20px;">Poin</th>
-                </tr>
-            </thead>
-            <tbody id="resellerLeaderboardTable"></tbody>
-        </table>
-    </div>
-                        <div class="pagination-container">
-                            <button class="btn-nav" id="prevRank" onclick="changeRankPage(-1)"> < </button>
-                            <span class="page-info" id="rankPageInfo">Rangking 1 - 10</span>
-                            <button class="btn-nav" id="nextRank" onclick="changeRankPage(1)"> > </button>
-                        </div>
-                    </div>
-                </section>
 
                 <!-- DASHBOARD ADMIN -->
                 <section id="secAdminDashboard" class="app-section hidden">
