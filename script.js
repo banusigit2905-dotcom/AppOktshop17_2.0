@@ -1,3 +1,11 @@
+function generateOrderId() {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let result = 'ORD-';
+    for (let i = 0; i < 5; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result; // Contoh hasil: ORD-X7Y2Z
+}
 const firebaseConfig = {
     apiKey: "AIzaSyCkH8ACVHoRxYru1g9oPa9tMD4yBUYQcZM",
     authDomain: "member-reseller-boci.firebaseapp.com",
@@ -167,9 +175,14 @@ function loadResellerData() {
             const tableBody = document.getElementById("resellerOrderTable");
             if (filteredDocs.length > 0) {
                 tableBody.innerHTML = filteredDocs.map(d => {
-                    const o = d.data();
-                    return `<tr><td>${o.customerName}</td><td>${o.produk}</td><td>Rp ${o.total.toLocaleString('id-ID')}</td><td><span style="color:${o.status==='Selesai'?'green':'orange'}; font-weight:800;">${o.status}</span></td></tr>`;
-                }).join('');
+    const o = d.data();
+    return `<tr>
+        <td><small style="font-weight:bold; color:#d4af37;">${o.orderId || '-'}</small><br>${o.customerName}</td>
+        <td>${o.produk}</td>
+        <td>Rp ${o.total.toLocaleString('id-ID')}</td>
+        <td><span style="color:${o.status==='Selesai'?'green':'orange'}; font-weight:800;">${o.status}</span></td>
+    </tr>`;
+}).join('');
             } else {
                 tableBody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:20px; color:#666;">${emptyMsg}</td></tr>`;
             }
@@ -186,19 +199,25 @@ function loadAdminData() {
 
     // Tabel Order Admin
     db.collection("orders").onSnapshot(snap => {
-        let pending = 0;
-        let totalBelanja = 0;
-        document.getElementById("adminOrderTable").innerHTML = snap.docs.map(d => {
-            const o = d.data();
-            if(o.status === 'pending') pending++;
-            if(o.status === 'Selesai') totalBelanja += (o.total || 0);
-            return `<tr>
-                <td>${o.resellerName || 'User'}</td>
-                <td>${o.customerName || '-'}</td>
-                <td>${o.produk || '-'}</td>
-                <td>${o.status==='pending'?`<button onclick="updateStat('orders','${d.id}')">Selesai</button>`:'✅'}</td>
-            </tr>`;
-        }).join('');
+    let pending = 0;
+    let totalBelanja = 0;
+    document.getElementById("adminOrderTable").innerHTML = snap.docs.map(d => {
+        const o = d.data();
+        if(o.status === 'pending') pending++;
+        if(o.status === 'Selesai') totalBelanja += (o.total || 0);
+
+        // Logika Tombol Selesai (Jika Selesai maka Hijau)
+        const btnAction = o.status === 'pending' 
+            ? `<button onclick="updateStat('orders','${d.id}')" class="btn-adm-action">Selesai</button>` 
+            : `<button class="btn-adm-done" disabled>✅ Selesai</button>`;
+
+        return `<tr>
+            <td>${o.resellerName || 'User'}</td>
+            <td><b style="color:#C62828;">${o.orderId || '-'}</b></td>
+            <td>${o.produk || '-'}</td>
+            <td>${btnAction}</td>
+        </tr>`;
+    }).join('');
         document.getElementById("badgeOrder").innerText = pending;
         if(document.getElementById("admQty")) document.getElementById("admQty").innerText = snap.size;
         if(document.getElementById("admTotal")) document.getElementById("admTotal").innerText = "Rp " + totalBelanja.toLocaleString('id-ID');
@@ -394,6 +413,7 @@ function renderCart() {
 
 document.getElementById("orderFormFinal").onsubmit = async (e) => {
     e.preventDefault();
+    const orderNo = generateOrderId(); // Buat nomor order di sini
     const cust = document.getElementById("ordCustomer").value;
     const hp = document.getElementById("ordHp").value;
     const pay = document.getElementById("ordPayment").value;
@@ -403,12 +423,21 @@ document.getElementById("orderFormFinal").onsubmit = async (e) => {
 
     try {
         await db.collection("orders").add({ 
-            resellerId: currentUser.id, resellerName: currentUser.nama, 
-            customerName: cust, customerHp: hp, produk: detail, total, 
-            jumlah: cart.reduce((s, i) => s + i.qty, 0), metode: pay, 
-            status: "pending", createdAt: firebase.firestore.FieldValue.serverTimestamp() 
+            orderId: orderNo, // Simpan No Order ke DB
+            resellerId: currentUser.id, 
+            resellerName: currentUser.nama, 
+            customerName: cust, 
+            customerHp: hp, 
+            produk: detail, 
+            total, 
+            jumlah: cart.reduce((s, i) => s + i.qty, 0), 
+            metode: pay, 
+            status: "pending", 
+            createdAt: firebase.firestore.FieldValue.serverTimestamp() 
         });
-        const waText = `*--- PESANAN BARU OKTSHOP17 ---*%0A%0A*Data Penerima:*%0ANama: ${cust}%0ANo. HP: ${hp}%0APembayaran: ${pay}%0A%0A*Detail Produk:*%0A${detailWA}%0A%0A*Total:* Rp ${total.toLocaleString('id-ID')}%0A%0A*Reseller:* ${currentUser.nama}`;
+
+        const waText = `*--- PESANAN BARU OKTSHOP17 ---*%0A%0A*No. Order:* ${orderNo}%0A*Data Penerima:*%0ANama: ${cust}%0ANo. HP: ${hp}%0APembayaran: ${pay}%0A%0A*Detail Produk:*%0A${detailWA}%0A%0A*Total:* Rp ${total.toLocaleString('id-ID')}%0A%0A*Reseller:* ${currentUser.nama}`;
+        
         closeOrderModal(); 
         window.open(`https://wa.me/62895345452412?text=${waText}`, '_blank');
     } catch(err) { alert("Gagal: " + err.message); }
