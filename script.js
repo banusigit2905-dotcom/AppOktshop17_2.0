@@ -251,7 +251,7 @@ function loadAdminData() {
         if(document.getElementById("admQty")) document.getElementById("admQty").innerText = filteredOrders.length;
         if(document.getElementById("admTotal")) document.getElementById("admTotal").innerText = "Rp " + totalUangMasuk.toLocaleString('id-ID');
     });
-    
+}
     // Tabel Retur Admin
     db.collection("returns").onSnapshot(snap => {
         if(document.getElementById("badgeReturn")) document.getElementById("badgeReturn").innerText = snap.docs.filter(d => d.data().status === 'proses').length;
