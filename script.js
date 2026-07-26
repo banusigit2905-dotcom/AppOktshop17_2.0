@@ -191,12 +191,13 @@ function loadResellerData() {
 }
 
 // --- 2. PERBAIKAN: SYNTAX ERROR DI LOADADMIN DATA ---
+// --- 2. PERBAIKAN STRUKTUR: LOADADMIN DATA ---
 function loadAdminData() {
-    // Ambil nilai filter
+    // Ambil nilai filter (jika ada)
     const startDate = document.getElementById("filterAdminStart") ? document.getElementById("filterAdminStart").value : null;
     const endDate = document.getElementById("filterAdminEnd") ? document.getElementById("filterAdminEnd").value : null;
 
-    // 1. Badge Aktivasi (Tetap sama)
+    // 1. Badge Aktivasi
     db.collection("users").where("role", "==", "reseller").where("isActive", "==", false).onSnapshot(snap => {
         if(document.getElementById("badgeActivation")) document.getElementById("badgeActivation").innerText = snap.size;
     });
@@ -204,17 +205,12 @@ function loadAdminData() {
     // 2. Tabel Order Admin dengan FILTER TANGGAL
     db.collection("orders").onSnapshot(snap => {
         let allOrders = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        
-        // Urutkan berdasarkan tanggal terbaru
         allOrders.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
 
         let filteredOrders = allOrders;
-
-        // Logika Filter Tanggal
         if (startDate && endDate) {
             const startRange = new Date(startDate).setHours(0, 0, 0, 0);
             const endRange = new Date(endDate).setHours(23, 59, 59, 999);
-            
             filteredOrders = allOrders.filter(o => {
                 const created = o.createdAt?.toDate().getTime();
                 return created >= startRange && created <= endRange;
@@ -228,29 +224,76 @@ function loadAdminData() {
             if(o.status === 'pending') pendingCount++;
             if(o.status === 'Selesai') totalUangMasuk += (o.total || 0);
 
-            // Format Tanggal untuk tampilan tabel
             const tgl = o.createdAt ? o.createdAt.toDate().toLocaleDateString('id-ID') : '-';
-
             const btnAction = o.status === 'pending' 
                 ? `<button onclick="updateStat('orders','${o.id}')" class="btn-adm-action">Selesai</button>` 
                 : `<button class="btn-adm-done" disabled>✅ Selesai</button>`;
 
             return `<tr>
                 <td>${o.resellerName || 'User'}</td>
-                <td>
-                    <b style="color:#C62828;">${o.orderId || '-'}</b><br>
-                    <small style="font-size:9px; color:#666;">${tgl}</small>
-                </td>
+                <td><b style="color:#C62828;">${o.orderId || '-'}</b><br><small style="font-size:9px; color:#666;">${tgl}</small></td>
                 <td>${o.produk || '-'}</td>
                 <td>${btnAction}</td>
             </tr>`;
-        }).join('') || '<tr><td colspan="4" style="text-align:center">Tidak ada data untuk periode ini</td></tr>';
+        }).join('') || '<tr><td colspan="4" style="text-align:center">Kosong</td></tr>';
 
-        // Update Stat Card di Dashboard
         document.getElementById("badgeOrder").innerText = pendingCount;
         if(document.getElementById("admQty")) document.getElementById("admQty").innerText = filteredOrders.length;
         if(document.getElementById("admTotal")) document.getElementById("admTotal").innerText = "Rp " + totalUangMasuk.toLocaleString('id-ID');
     });
+
+    // 3. Tabel Retur Admin
+    db.collection("returns").onSnapshot(snap => {
+        if(document.getElementById("badgeReturn")) document.getElementById("badgeReturn").innerText = snap.docs.filter(d => d.data().status === 'proses').length;
+        document.getElementById("adminReturnTable").innerHTML = snap.docs.map(d => {
+            const r = d.data();
+            return `<tr>
+                <td><b>${r.nama || 'Reseller'}</b></td>
+                <td>${r.produk || '-'}</td>
+                <td><small>${r.alasan || '-'}</small></td>
+                <td>${r.hp || '-'}</td>
+                <td>${r.status === 'proses' ? `<button onclick="updateStat('returns','${d.id}')" style="background:#F2A93B; color:white; border:none; padding:5px; border-radius:4px;">Selesai</button>` : '✅'}</td>
+            </tr>`;
+        }).join('') || '<tr><td colspan="5" style="text-align:center">Kosong</td></tr>';
+    });
+
+    // 4. Tabel Keluhan Admin
+    db.collection("complaints").onSnapshot(snap => {
+        if(document.getElementById("badgeComplaint")) document.getElementById("badgeComplaint").innerText = snap.docs.filter(d => d.data().status === 'proses').length;
+        document.getElementById("adminCompTable").innerHTML = snap.docs.map(d => {
+            const c = d.data();
+            return `<tr>
+                <td><b>${c.nama || 'User'}</b></td>
+                <td>${c.hp || '-'}</td>
+                <td><small>${c.pesan || '-'}</small></td>
+                <td>${c.status === 'proses' ? `<button onclick="updateStat('complaints','${d.id}')" style="background:#F2A93B; color:white; border:none; padding:5px; border-radius:4px;">Selesai</button>` : '✅'}</td>
+            </tr>`;
+        }).join('') || '<tr><td colspan="4" style="text-align:center">Kosong</td></tr>';
+    });
+    
+    // 5. Tabel Penukaran Poin Admin
+    db.collection("redemptions").onSnapshot(snap => {
+        let totalPoinKeluar = 0;
+        document.getElementById("adminRedeemTable").innerHTML = snap.docs.map(d => {
+            const r = d.data();
+            if (r.status === 'Selesai') totalPoinKeluar += (r.points || 0);
+
+            const btnAction = r.status === 'proses' 
+                ? `<button onclick="updateStat('redemptions','${d.id}')" style="background:#F2A93B; color:white; border:none; padding:5px; border-radius:4px;">Selesai</button>` 
+                : '✅';
+
+            return `<tr>
+                <td><b>${r.resellerName}</b><br><small>${r.namaPenerima || '-'}</small></td>
+                <td>${(r.points || 0).toLocaleString()}</td>
+                <td>${btnAction}</td>
+            </tr>`;
+        }).join('') || '<tr><td colspan="3" style="text-align:center">Belum ada penukaran</td></tr>';
+
+        const badgeRedeem = document.getElementById("badgeRedeem");
+        if(badgeRedeem) badgeRedeem.innerText = snap.docs.filter(d => d.data().status === 'proses').length;
+        if(document.getElementById("admPoin")) document.getElementById("admPoin").innerText = totalPoinKeluar.toLocaleString('id-ID');
+    });
+} // Penutup loadAdminData yang benar
 }
     // Tabel Retur Admin
     db.collection("returns").onSnapshot(snap => {
