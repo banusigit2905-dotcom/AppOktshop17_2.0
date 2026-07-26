@@ -191,56 +191,62 @@ function loadResellerData() {
 }
 
 // --- 2. PERBAIKAN: SYNTAX ERROR DI LOADADMIN DATA ---
-// --- 2. PERBAIKAN STRUKTUR: LOADADMIN DATA ---
 function loadAdminData() {
-    // Ambil nilai filter (jika ada)
-    const startDate = document.getElementById("filterAdminStart") ? document.getElementById("filterAdminStart").value : null;
-    const endDate = document.getElementById("filterAdminEnd") ? document.getElementById("filterAdminEnd").value : null;
+    const startDate = document.getElementById("filterAdminStart")?.value;
+    const endDate = document.getElementById("filterAdminEnd")?.value;
 
-    // 1. Badge Aktivasi
-    db.collection("users").where("role", "==", "reseller").where("isActive", "==", false).onSnapshot(snap => {
-        if(document.getElementById("badgeActivation")) document.getElementById("badgeActivation").innerText = snap.size;
-    });
-
-    // 2. Tabel Order Admin dengan FILTER TANGGAL
+    // Listen Orders
     db.collection("orders").onSnapshot(snap => {
         let allOrders = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         allOrders.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
 
-        let filteredOrders = allOrders;
+        // Filter Date
+        let filtered = allOrders;
         if (startDate && endDate) {
-            const startRange = new Date(startDate).setHours(0, 0, 0, 0);
-            const endRange = new Date(endDate).setHours(23, 59, 59, 999);
-            filteredOrders = allOrders.filter(o => {
-                const created = o.createdAt?.toDate().getTime();
-                return created >= startRange && created <= endRange;
-            });
+            const s = new Date(startDate).setHours(0,0,0,0);
+            const e = new Date(endDate).setHours(23,59,59,999);
+            filtered = allOrders.filter(o => o.createdAt?.toDate().getTime() >= s && o.createdAt?.toDate().getTime() <= e);
         }
 
-        let pendingCount = 0;
-        let totalUangMasuk = 0;
-
-        document.getElementById("adminOrderTable").innerHTML = filteredOrders.map(o => {
-            if(o.status === 'pending') pendingCount++;
-            if(o.status === 'Selesai') totalUangMasuk += (o.total || 0);
-
-            const tgl = o.createdAt ? o.createdAt.toDate().toLocaleDateString('id-ID') : '-';
-            const btnAction = o.status === 'pending' 
-                ? `<button onclick="updateStat('orders','${o.id}')" class="btn-adm-action">Selesai</button>` 
-                : `<button class="btn-adm-done" disabled>✅ Selesai</button>`;
-
+        let pending = 0, income = 0;
+        document.getElementById("adminOrderTable").innerHTML = filtered.map(o => {
+            if(o.status === 'pending') pending++;
+            if(o.status === 'Selesai') income += (o.total || 0);
             return `<tr>
-                <td>${o.resellerName || 'User'}</td>
-                <td><b style="color:#C62828;">${o.orderId || '-'}</b><br><small style="font-size:9px; color:#666;">${tgl}</small></td>
-                <td>${o.produk || '-'}</td>
-                <td>${btnAction}</td>
+                <td>${o.resellerName}</td>
+                <td><b>${o.orderId || '-'}</b></td>
+                <td>${o.produk}</td>
+                <td>${o.status === 'pending' ? `<button onclick="updateStat('orders','${o.id}')">Selesai</button>` : '✅'}</td>
             </tr>`;
-        }).join('') || '<tr><td colspan="4" style="text-align:center">Kosong</td></tr>';
+        }).join('');
 
-        document.getElementById("badgeOrder").innerText = pendingCount;
-        if(document.getElementById("admQty")) document.getElementById("admQty").innerText = filteredOrders.length;
-        if(document.getElementById("admTotal")) document.getElementById("admTotal").innerText = "Rp " + totalUangMasuk.toLocaleString('id-ID');
+        document.getElementById("badgeOrder").innerText = pending;
+        document.getElementById("admQty").innerText = filtered.length;
+        document.getElementById("admTotal").innerText = "Rp " + income.toLocaleString('id-ID');
     });
+
+    // Redemptions
+    db.collection("redemptions").onSnapshot(snap => {
+        let out = 0;
+        document.getElementById("adminRedeemTable").innerHTML = snap.docs.map(d => {
+            const r = d.data();
+            if(r.status === 'Selesai') out += (r.points || 0);
+            return `<tr>
+                <td><b>${r.resellerName}</b></td>
+                <td>${r.points.toLocaleString()}</td>
+                <td>${r.status === 'proses' ? `<button onclick="updateStat('redemptions','${d.id}')">Selesai</button>` : '✅'}</td>
+            </tr>`;
+        }).join('');
+        document.getElementById("badgeRedeem").innerText = snap.docs.filter(d => d.data().status === 'proses').length;
+        document.getElementById("admPoin").innerText = out.toLocaleString('id-ID');
+    });
+
+    // Activation Badge
+    db.collection("users").where("isActive", "==", false).onSnapshot(s => {
+        document.getElementById("badgeActivation").innerText = s.size;
+    });
+}
+
 
     // 3. Tabel Retur Admin
     db.collection("returns").onSnapshot(snap => {
