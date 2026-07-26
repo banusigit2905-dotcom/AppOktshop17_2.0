@@ -83,9 +83,54 @@
                             <div>
                                 <h3>Riwayat Pesanan</h3>
                                 <small style="font-size: 9px; color: #C62828; display: block;">*Menampilkan order hari ini</small>
-                            </div>
-                            <button onclick="openOrderModal()" class="btn-gold-sm">🛒 + PESAN</button>
-                        </div>
+                            <!-- MODAL BUAT PESANAN (Tambahkan ini) -->
+<div id="orderModal" class="hidden modal-overlay">
+    <div class="modal-box">
+        <!-- STEP 1: Pilih Produk -->
+        <div id="orderStep1">
+            <h3>🛒 Buat Pesanan</h3>
+            <div class="form-styled">
+                <label style="font-size: 11px; font-weight: bold;">Kategori</label>
+                <select id="ordCatSelect" onchange="filterProductsByCategory()" class="styled-input"></select>
+                
+                <label style="font-size: 11px; font-weight: bold;">Pilih Produk</label>
+                <select id="ordProdSelect" class="styled-input"></select>
+                
+                <label style="font-size: 11px; font-weight: bold;">Jumlah (QTY)</label>
+                <input type="number" id="ordQtyInput" value="1" min="1" class="styled-input">
+                
+                <button onclick="addToCart()" class="btn-primary" style="background: #2ecc71; margin-bottom: 15px;">+ Tambah ke Keranjang</button>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead><tr><th>Produk</th><th>Subtotal</th><th>Hapus</th></tr></thead>
+                    <tbody id="cartTableBody"></tbody>
+                </table>
+            </div>
+            <div id="cartTotalText" style="font-weight:bold; margin-top:10px; color: #C62828;">Total: Rp 0</div>
+            
+            <button onclick="goToStep2()" class="btn-primary" style="margin-top:10px;">LANJUT KE PENGIRIMAN</button>
+            <button onclick="closeOrderModal()" class="btn-secondary">BATAL</button>
+        </div>
+
+        <!-- STEP 2: Detail Customer -->
+        <div id="orderStep2" class="hidden">
+            <h3>📝 Detail Pengiriman</h3>
+            <form id="orderFormFinal" class="form-styled">
+                <input type="text" id="ordCustomer" placeholder="Nama Penerima" required>
+                <input type="tel" id="ordHp" placeholder="No. WhatsApp Penerima" required>
+                <select id="ordPayment" class="styled-input">
+                    <option value="Transfer Bank">Transfer Bank</option>
+                    <option value="E-Wallet (Dana/OVO)">E-Wallet (Dana/OVO)</option>
+                    <option value="Tunai">Tunai</option>
+                </select>
+                <button type="submit" class="btn-primary">KONFIRMASI & KIRIM WA</button>
+                <button type="button" onclick="goToStep1()" class="btn-secondary">KEMBALI</button>
+            </form>
+        </div>
+    </div>
+</div>
 
                         <!-- FILTER RIWAYAT -->
                         <div class="filter-row">
