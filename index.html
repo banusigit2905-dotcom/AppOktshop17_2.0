@@ -50,6 +50,9 @@
                     <span class="logo-text">OKTSHOP17</span>
                 </div>
                 <div class="nav-right">
+                    <button id="btnInboxHeader" class="btn-icon-notif hidden" onclick="showSection('secResellerInbox')">
+        📩 <span id="badgeInbox" class="badge">0</span></button>
+    <button id="btnTukarPoinHeader" class="btn-gold-sm hidden" onclick="openRedeemModal()">🎁 TUKAR POIN</button>
                     <button id="btnTukarPoinHeader" class="btn-gold-sm hidden" onclick="openRedeemModal()" style="margin-right: 5px;">🎁 TUKAR POIN</button>
                     <div id="adminNotifHeader" class="notif-box hidden">
                         <div class="notif-item">🎁<span id="badgeRedeem" class="badge">0</span></div>
@@ -74,7 +77,19 @@
                 <!-- DASHBOARD RESELLER -->
 <section id="secResellerDashboard" class="app-section hidden">
     
-    <!-- Bagian Stat Card (Paling Atas) -->
+    <!-- SECTION KOTAK MASUK USER -->
+<section id="secResellerInbox" class="app-section hidden">
+    <div class="card card-border">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h3 style="margin:0;">📩 Kotak Masuk</h3>
+            <button onclick="markAllAsRead()" class="btn-secondary" style="font-size: 10px; width: auto; padding: 5px 10px;">Tandai Semua Dibaca</button>
+        </div>
+        <div id="inboxList" class="inbox-container">
+            <!-- Pesan akan muncul di sini -->
+            <p style="text-align: center; color: #999;">Tidak ada pesan baru.</p>
+        </div>
+    </div>
+</section>
 <!-- Bagian Stat Card Dashboard Reseller -->
 <div class="stat-grid">
     <!-- Kotak 1: Belanja Hari Ini -->
