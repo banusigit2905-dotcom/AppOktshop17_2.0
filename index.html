@@ -175,16 +175,48 @@
 
                 <!-- DASHBOARD ADMIN -->
                 <section id="secAdminDashboard" class="app-section hidden">
-                    <div class="stat-grid">
-                        <div class="stat-card c1"><div>ORDER</div><div id="admQty" class="stat-value">0</div></div>
-                        <div class="stat-card c2"><div>TOTAL</div><div id="admTotal" class="stat-value">Rp 0</div></div>
-                        <div class="stat-card c3"><div>POIN KELUAR</div><div id="admPoin" class="stat-value">0</div></div>
-                    </div>
-                    <div class="card card-border">
-                        <h3>Pesanan Masuk</h3>
-                        <div class="table-container"><table><thead><tr><th>Reseller</th><th>No. Order</th><th>Produk</th><th>Aksi</th></tr></thead><tbody id="adminOrderTable"></tbody></table></div>
-                    </div>
-                </section>
+    <!-- Stat Card tetap sama -->
+    <div class="stat-grid">
+        <div class="stat-card c1"><div>ORDER</div><div id="admQty" class="stat-value">0</div></div>
+        <div class="stat-card c2"><div>TOTAL</div><div id="admTotal" class="stat-value">Rp 0</div></div>
+        <div class="stat-card c3"><div>POIN KELUAR</div><div id="admPoin" class="stat-value">0</div></div>
+    </div>
+
+    <div class="card card-border">
+        <div class="card-header-flex" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <h3 style="margin:0;">Pesanan Masuk</h3>
+            <!-- Tombol Reset Filter -->
+            <button onclick="resetAdminOrderFilter()" class="btn-secondary" style="width: auto; padding: 5px 10px; font-size: 10px;">Tampilkan Semua</button>
+        </div>
+
+        <!-- FILTER TANGGAL ADMIN -->
+        <div class="filter-row" style="display: flex; gap: 5px; align-items: center; margin-bottom: 15px; background: #f9f9f9; padding: 10px; border-radius: 8px;">
+            <div style="flex: 1;">
+                <label style="font-size: 9px; font-weight: bold; display: block;">DARI:</label>
+                <input type="date" id="filterAdminStart" onchange="loadAdminData()" style="width: 100%; padding: 5px; border: 1px solid #ddd; border-radius: 4px;">
+            </div>
+            <div style="color: #666; font-size: 11px; margin-top: 15px;">s/d</div>
+            <div style="flex: 1;">
+                <label style="font-size: 9px; font-weight: bold; display: block;">SAMPAI:</label>
+                <input type="date" id="filterAdminEnd" onchange="loadAdminData()" style="width: 100%; padding: 5px; border: 1px solid #ddd; border-radius: 4px;">
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Reseller</th>
+                        <th>No. Order / Tgl</th> <!-- Tambah info tanggal di sini -->
+                        <th>Produk</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="adminOrderTable"></tbody>
+            </table>
+        </div>
+    </div>
+</section>
 
                 <!-- MODAL & SECTION LAINNYA -->
                 <section id="secAdminActivation" class="app-section hidden"><div class="card card-border"><h3>🔑 Aktivasi Akun Baru</h3><div class="table-container"><table><thead><tr><th>ID</th><th>Nama</th><th>Email</th><th>Aksi</th></tr></thead><tbody id="adminActivationTable"></tbody></table></div></div></section>
