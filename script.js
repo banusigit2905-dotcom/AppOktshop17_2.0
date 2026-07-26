@@ -118,24 +118,40 @@ function loadResellerData() {
 
     db.collection("orders").where("resellerId", "==", currentUser.id).onSnapshot(sOrders => {
         db.collection("redemptions").where("resellerId", "==", currentUser.id).where("status", "==", "Selesai").onSnapshot(sRedeems => {
-            let q = 0, t = 0;
+            
+            let totalSpendingAllTime = 0;
+            let qtyToday = 0;
+            const todayStart = new Date().setHours(0, 0, 0, 0);
+            const todayEnd = new Date().setHours(23, 59, 59, 999);
+
             let allDocs = sOrders.docs.sort((a, b) => (b.data().createdAt?.seconds || 0) - (a.data().createdAt?.seconds || 0));
             
             allDocs.forEach(d => {
                 const o = d.data();
-                if(o.status === 'Selesai') { q += (o.jumlah || 0); t += (o.total || 0); }
+                const createdTime = o.createdAt?.toDate().getTime();
+
+                if(o.status === 'Selesai') { 
+                    totalSpendingAllTime += (o.total || 0); 
+                    
+                    // Hitung QTY hanya untuk pesanan hari ini yang Selesai
+                    if (createdTime >= todayStart && createdTime <= todayEnd) {
+                        qtyToday += (o.jumlah || 0);
+                    }
+                }
             });
 
+            // Hitung Poin Sisa
             let usedPoints = 0;
             sRedeems.docs.forEach(d => { usedPoints += (d.data().points || 0); });
-            currentPointsVal = Math.floor(t / 100) - usedPoints;
+            currentPointsVal = Math.floor(totalSpendingAllTime / 100) - usedPoints;
 
-            document.getElementById("resQty").innerText = q.toLocaleString('id-ID');
-            document.getElementById("resTotal").innerText = "Rp " + t.toLocaleString('id-ID');
+            // Update UI Kotak Statistik
+            document.getElementById("resQtyToday").innerText = qtyToday.toLocaleString('id-ID');
             document.getElementById("resPoin").innerText = currentPointsVal.toLocaleString('id-ID');
             document.getElementById("displayMyPoints").innerText = currentPointsVal.toLocaleString('id-ID');
 
-            let filteredDocs = allDocs;
+            // Logika Tabel Riwayat (tetap menggunakan filter tanggal jika ada)
+            let filteredDocs = [];
             if (startDate && endDate) {
                 const startRange = new Date(startDate).setHours(0, 0, 0, 0);
                 const endRange = new Date(endDate).setHours(23, 59, 59, 999);
@@ -144,24 +160,26 @@ function loadResellerData() {
                     return created >= startRange && created <= endRange;
                 });
             } else {
-                const today = new Date().setHours(0,0,0,0);
-                filteredDocs = allDocs.filter(d => (d.data().createdAt?.toDate().getTime() || 0) >= today);
+                // Default tampilkan order hari ini di tabel
+                filteredDocs = allDocs.filter(d => {
+                    const created = d.data().createdAt?.toDate().getTime();
+                    return created >= todayStart && created <= todayEnd;
+                });
             }
 
-            document.getElementById("resellerOrderTable").innerHTML = filteredDocs.map(d => {
+            const tableBody = document.getElementById("resellerOrderTable");
+            tableBody.innerHTML = filteredDocs.map(d => {
                 const o = d.data();
-                return `<tr><td><b>${o.orderId || '-'}</b></td><td>${o.produk}</td><td>Rp ${o.total.toLocaleString()}</td><td style="color:${o.status==='Selesai'?'green':'orange'}">${o.status}</td></tr>`;
-            }).join('') || '<tr><td colspan="4" style="text-align:center">Kosong</td></tr>';
+                return `<tr>
+                    <td><small style="font-weight:bold; color:#d4af37;">${o.orderId || '-'}</small></td>
+                    <td>${o.produk}</td>
+                    <td>Rp ${o.total.toLocaleString('id-ID')}</td>
+                    <td><span style="color:${o.status==='Selesai'?'green':'orange'}; font-weight:800;">${o.status}</span></td>
+                </tr>`;
+            }).join('') || '<tr><td colspan="4" style="text-align:center; padding:20px;">Tidak ada pesanan.</td></tr>';
         });
     });
 }
-
-function resetOrderFilter() {
-    document.getElementById("filterStart").value = "";
-    document.getElementById("filterEnd").value = "";
-    loadResellerData();
-}
-
 // --- 4. ADMIN DATA LOGIC (STRUKTUR DIPERBAIKI) ---
 function loadAdminData() {
     const startDate = document.getElementById("filterAdminStart")?.value;
@@ -256,15 +274,27 @@ function loadResellerLeaderboard() {
     db.collection("users").where("role", "==", "reseller").onSnapshot(sUsers => {
         db.collection("orders").where("status", "==", "Selesai").onSnapshot(sOrders => {
             const allOrders = sOrders.docs.map(d => d.data());
+            
             allRankings = sUsers.docs.map(u => {
                 const total = allOrders.filter(o => o.resellerId === u.id).reduce((sum, o) => sum + (o.total || 0), 0);
-                return { nama: u.data().nama, poin: Math.floor(total / 100) };
+                return { 
+                    id: u.id, // Simpan ID untuk pengecekan peringkat pribadi
+                    nama: u.data().nama, 
+                    poin: Math.floor(total / 100) 
+                };
             }).sort((a, b) => b.poin - a.poin);
+
+            // --- TAMBAHAN: Update Kotak Peringkat Kamu ---
+            const myRankIndex = allRankings.findIndex(r => r.id === currentUser.id);
+            const myRankValue = myRankIndex !== -1 ? (myRankIndex + 1) : "-";
+            const rankElem = document.getElementById("resMyRank");
+            if(rankElem) rankElem.innerText = "#" + myRankValue;
+            // --------------------------------------------
+
             renderRankTable();
         });
     });
 }
-
 function renderRankTable() {
     const startIdx = currentRankPage * 10;
     const pageData = allRankings.slice(startIdx, startIdx + 10);
