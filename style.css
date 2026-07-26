@@ -269,3 +269,38 @@ td small {
     display: block;
     line-height: 1.2;
 }
+.btn-icon-notif {
+    background: #444;
+    border: none;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 8px;
+    position: relative;
+    cursor: pointer;
+    margin-right: 8px;
+    font-size: 18px;
+}
+
+.inbox-item {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+    position: relative;
+    transition: 0.3s;
+}
+
+.inbox-item.unread {
+    background: #fff9e6;
+    border-left: 4px solid #d4af37;
+}
+
+.inbox-item .time {
+    font-size: 9px;
+    color: #999;
+    display: block;
+    margin-top: 4px;
+}
+
+.inbox-item .msg-text {
+    font-size: 13px;
+    color: #333;
+}
