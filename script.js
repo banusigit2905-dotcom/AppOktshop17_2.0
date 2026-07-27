@@ -68,7 +68,16 @@ function initApp() {
 
     renderSidebar();
     syncCatalog();
-
+if (currentUser.role === 'reseller' && currentUser.isActive === true && !currentUser.bonusReceived) {
+        // Tambahkan bonus ke database
+        db.collection("users").doc(currentUser.id).update({
+            bonusReceived: true,
+            bonusPoints: 2000
+        }).then(() => {
+            alert("🎉 Selamat! Kamu mendapatkan Poin 2.000 pertama kali login setelah akun diaktifkan. Kumpulkan poinnya untuk ditukar dengan Voucher Pilihan!");
+            location.reload(); // Refresh untuk update poin
+        });
+}
     if (currentUser.role === 'admin') {
         // Tampilan Admin
         document.getElementById("adminNotifHeader").classList.remove("hidden");
