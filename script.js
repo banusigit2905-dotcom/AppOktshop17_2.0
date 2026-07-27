@@ -205,9 +205,13 @@ function loadResellerData() {
             });
 
             let usedPoints = 0;
-            sRedeems.docs.forEach(d => { usedPoints += (d.data().points || 0); });
-            currentPointsVal = Math.floor(totalSpendingAllTime / 100) - usedPoints;
+sRedeems.docs.forEach(d => { usedPoints += (d.data().points || 0); });
 
+// Ambil bonus dari data user
+const bonus = currentUser.bonusPoints || 0;
+
+// Update rumus: Belanja + Bonus - Poin yang sudah ditukar
+currentPointsVal = Math.floor(totalSpendingAllTime / 100) - usedPoints + bonus;
             if(document.getElementById("resTotalToday")) document.getElementById("resTotalToday").innerText = "Rp " + totalTodayRupiah.toLocaleString('id-ID');
             document.getElementById("resPoin").innerText = currentPointsVal.toLocaleString('id-ID');
             document.getElementById("displayMyPoints").innerText = currentPointsVal.toLocaleString('id-ID');
