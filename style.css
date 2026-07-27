@@ -304,3 +304,22 @@ td small {
     font-size: 13px;
     color: #333;
 }
+.btn-checkout {
+    background: var(--gold); /* Mengambil warna emas dari root */
+    color: #2B1B12;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 8px;
+    font-weight: 800;
+    font-size: 11px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: 0.3s;
+}
+
+.btn-checkout:hover {
+    filter: brightness(0.9);
+    transform: scale(1.05);
+}
