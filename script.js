@@ -56,6 +56,47 @@ auth.onAuthStateChanged(async (user) => {
 });
 
 function initApp() {
+    function loadNotifications() {
+    db.collection("notifications")
+      .where("userId", "==", currentUser.id)
+      .orderBy("createdAt", "desc")
+      .onSnapshot(snap => {
+        const inboxList = document.getElementById("inboxList");
+        const badgeInbox = document.getElementById("badgeInbox");
+        const badgeSidebar = document.getElementById("badgeSidebar");
+        
+        let unreadCount = 0;
+        let html = "";
+
+        snap.forEach(doc => {
+            const n = doc.data();
+            if (!n.isRead) unreadCount++;
+            
+            html += `
+                <div class="inbox-item ${n.isRead ? '' : 'unread'}">
+                    <strong>${n.title}</strong>
+                    <p class="msg-text">${n.text}</p>
+                    <span class="time">${n.createdAt?.toDate().toLocaleString('id-ID')}</span>
+                </div>
+            `;
+        });
+
+        inboxList.innerHTML = html || '<p style="text-align:center; color:#999;">Tidak ada pesan.</p>';
+        
+        // Update Badge
+        if(unreadCount > 0) {
+            badgeInbox.innerText = unreadCount;
+            badgeInbox.style.display = "block";
+            badgeSidebar.innerText = unreadCount;
+            badgeSidebar.style.display = "inline-block";
+        } else {
+            badgeInbox.style.display = "none";
+            badgeSidebar.style.display = "none";
+        }
+    });
+}
+
+// PANGGIL loadNotifications() di dalam fungsi initApp() untuk reseller
     document.getElementById("loginScreen").classList.add("hidden");
     document.getElementById("appWrapper").classList.remove("hidden");
     document.getElementById("userGreetName").innerText = currentUser.nama || "User";
@@ -68,12 +109,19 @@ function initApp() {
     renderSidebar();
     syncCatalog();
 
-    if (currentUser.role === 'admin') {
-        document.getElementById("adminNotifHeader").classList.remove("hidden");
-        document.getElementById("btnTukarPoinHeader").classList.add("hidden");
-        showSection('secAdminDashboard');
-        loadAdminData();
-    } else {
+    // Cari bagian ini di script.js
+if (currentUser.role === 'admin') {
+    // ... code admin
+} else {
+    document.getElementById("adminNotifHeader").classList.add("hidden");
+    document.getElementById("btnTukarPoinHeader").classList.remove("hidden");
+    
+    // TAMBAHKAN BARIS INI:
+    document.getElementById("btnInboxHeader").classList.remove("hidden"); 
+
+    showSection('secResellerDashboard');
+    // ... sisa kode lainnya
+
         document.getElementById("adminNotifHeader").classList.add("hidden");
         document.getElementById("btnTukarPoinHeader").classList.remove("hidden");
         showSection('secResellerDashboard');
@@ -485,8 +533,12 @@ function renderSidebar() {
     const nav = document.getElementById("sidebarNav");
     let menuItems = "";
     if (currentUser.role === 'admin') {
-        // Menu Admin tetap sama
-        ...
+        menuItems = `
+            <div class="nav-item" onclick="showSection('secAdminDashboard')">📊 Dashboard Admin</div>
+            <div class="nav-item" onclick="showSection('secAdminActivation')">🔑 Aktivasi Reseller</div>
+            <div class="nav-item" onclick="showSection('secAdminCatalog')">📦 Kelola Katalog</div>
+            <div class="nav-item" onclick="showSection('secAdminRedeem')">🎁 Penukaran Poin</div>
+        `;
     } else {
         menuItems = `
             <div class="nav-item" onclick="showSection('secResellerDashboard')">📊 Dashboard Reseller</div>
