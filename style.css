@@ -42,7 +42,7 @@ body { background: var(--bg); color: #fff; overflow-x: hidden; }
 }
 .menu-toggle { background: none; border: none; color: #fff; font-size: 22px; cursor: pointer; }
 
-.nav-right { display: flex; align-items: center; gap: 5px;
+.nav-right { display: flex; align-items: center; gap: 5px;}
 .notif-box { display: flex; gap: 10px; background: rgba(255,255,255,0.1); padding: 5px 10px; border-radius: 8px; }
 .notif-item { position: relative; font-size: 16px; }
 .badge { position: absolute; top: -8px; right: -8px; background: var(--red-mid); color: #fff; font-size: 9px; padding: 2px 5px; border-radius: 10px; }
