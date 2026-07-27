@@ -28,11 +28,21 @@ body { background: var(--bg); color: #fff; overflow-x: hidden; }
     padding: 10px 15px; background: var(--sidebar-bg);
     position: sticky; top: 0; z-index: 1000; height: 60px;
 }
-.nav-left { display: flex; align-items: center; gap: 10px; }
-.logo-text { font-weight: 800; font-size: 14px; color: var(--gold); }
+.nav-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0; /* Mencegah logo mengecil/tertekan */
+}
+.logo-text {
+    font-weight: 800;
+    font-size: 14px;
+    color: var(--gold);
+    margin-right: 10px; /* Tambahkan jarak ke kanan agar tidak menempel ke tombol */
+}
 .menu-toggle { background: none; border: none; color: #fff; font-size: 22px; cursor: pointer; }
 
-.nav-right { display: flex; align-items: center; gap: 8px; }
+.nav-right { display: flex; align-items: center; gap: 5px;
 .notif-box { display: flex; gap: 10px; background: rgba(255,255,255,0.1); padding: 5px 10px; border-radius: 8px; }
 .notif-item { position: relative; font-size: 16px; }
 .badge { position: absolute; top: -8px; right: -8px; background: var(--red-mid); color: #fff; font-size: 9px; padding: 2px 5px; border-radius: 10px; }
@@ -273,14 +283,16 @@ td small {
     background: #444;
     border: none;
     color: white;
-    padding: 8px 12px;
+    padding: 6px 10px; /* Ukuran dikurangi dari 8px 12px */
     border-radius: 8px;
     position: relative;
     cursor: pointer;
-    margin-right: 8px;
-    font-size: 18px;
+    font-size: 16px; /* Ukuran icon sedikit diperkecil */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 38px; /* Memberikan ukuran minimal agar tetap kotak */
 }
-
 .inbox-item {
     padding: 12px;
     border-bottom: 1px solid #eee;
