@@ -343,7 +343,11 @@ function loadResellerLeaderboard() {
             const allOrders = sOrders.docs.map(d => d.data());
             allRankings = sUsers.docs.map(u => {
                 const total = allOrders.filter(o => o.resellerId === u.id).reduce((sum, o) => sum + (o.total || 0), 0);
-                return { id: u.id, nama: u.data().nama, poin: Math.floor(total / 100) };
+                return { 
+                    id: u.id, 
+                    nama: u.data().nama, 
+                    poin: Math.floor(total / 100) + (u.data().bonusPoints || 0) // LEADERBOARD DENGAN BONUS
+                };
             }).sort((a, b) => b.poin - a.poin);
 
             const myRankIndex = allRankings.findIndex(r => r.id === currentUser.id);
