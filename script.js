@@ -119,7 +119,7 @@ function loadNotifications() {
         let html = "";
 
         if (snap.empty) {
-            if(tableBody) tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px;">Kosong</td></tr>';
+            if(tableBody) tableBody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px;">Kosong</td></tr>';
             if(badgeInbox) badgeInbox.style.display = "none";
             return;
         }
@@ -138,7 +138,6 @@ function loadNotifications() {
                     style="cursor:pointer; font-weight:${weight}; color:${color}; ${n.isRead ? '' : 'background:#fff9e6;'}">
                     <td>${index + 1}</td>
                     <td><small>${waktu}</small></td>
-                    <td>${n.title}</td>
                     <td style="text-align: left;">${n.text.substring(0, 30)}...</td>
                     <td>${n.isRead ? 'Dilihat' : '<b>Baru</b>'}</td>
                 </tr>
@@ -349,11 +348,11 @@ db.collection("returns").onSnapshot(snap => {
     const pending = snap.docs.filter(d => d.data().status === 'proses').length;
     if (lastAdminCounts.return !== -1 && pending > lastAdminCounts.return) playAdminTing();
     lastAdminCounts.return = pending;
+    if(document.getElementById("badgeReturn")) document.getElementById("badgeReturn").innerText = pending;
 
     document.getElementById("adminReturnTable").innerHTML = snap.docs.map(d => {
         const r = d.data();
         return `<tr>
-            <td>${r.nama}</td>
             <td><b>${d.id.substring(0,6).toUpperCase()}</b></td>
             <td>${r.produk}</td>
             <td>${r.alasan}</td>
@@ -368,11 +367,11 @@ db.collection("complaints").onSnapshot(snap => {
     const pending = snap.docs.filter(d => d.data().status === 'proses').length;
     if (lastAdminCounts.complaint !== -1 && pending > lastAdminCounts.complaint) playAdminTing();
     lastAdminCounts.complaint = pending;
+    if(document.getElementById("badgeComplaint")) document.getElementById("badgeComplaint").innerText = pending;
 
     document.getElementById("adminCompTable").innerHTML = snap.docs.map(d => {
         const c = d.data();
         return `<tr>
-            <td>${c.nama}</td>
             <td><b>${d.id.substring(0,6).toUpperCase()}</b></td>
             <td>${c.pesan}</td>
             <td>${c.hp}</td>
@@ -408,22 +407,6 @@ db.collection("complaints").onSnapshot(snap => {
         document.getElementById("badgeOrder").innerText = pendingCount;
         document.getElementById("admQty").innerText = filtered.length;
         document.getElementById("admTotal").innerText = "Rp " + totalUang.toLocaleString();
-    });
-
-    db.collection("returns").onSnapshot(snap => {
-        if(document.getElementById("badgeReturn")) document.getElementById("badgeReturn").innerText = snap.docs.filter(d => d.data().status === 'proses').length;
-        document.getElementById("adminReturnTable").innerHTML = snap.docs.map(d => {
-            const r = d.data();
-            return `<tr><td><b>${r.nama}</b></td><td>${r.produk}</td><td>${r.alasan}</td><td>${r.hp}</td><td>${r.status === 'proses' ? `<button onclick="updateStat('returns','${d.id}')">Selesai</button>` : '✅'}</td></tr>`;
-        }).join('');
-    });
-
-    db.collection("complaints").onSnapshot(snap => {
-        if(document.getElementById("badgeComplaint")) document.getElementById("badgeComplaint").innerText = snap.docs.filter(d => d.data().status === 'proses').length;
-        document.getElementById("adminCompTable").innerHTML = snap.docs.map(d => {
-            const c = d.data();
-            return `<tr><td><b>${c.nama}</b></td><td>${c.hp}</td><td>${c.pesan}</td><td>${c.status === 'proses' ? `<button onclick="updateStat('complaints','${d.id}')">Selesai</button>` : '✅'}</td></tr>`;
-        }).join('');
     });
 
     db.collection("redemptions").onSnapshot(snap => {
