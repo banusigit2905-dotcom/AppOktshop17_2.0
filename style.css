@@ -77,11 +77,11 @@ body { background: var(--bg); color: #fff; overflow-x: hidden; }
 .card-header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
 .table-container { overflow-x: auto; width: 100%; }
 table { width: 100%; border-collapse: collapse; font-size: 11px; }
-th { padding: 10px; border-bottom: 2px solid #ddd; background: #f2f2f2; }
-td { padding: 10px; border-bottom: 1px solid #eee; vertical-align: middle; }
+th { padding: 10px; border-bottom: 2px solid #ddd; background: #f2f2f2; text-align: center; }
+td { padding: 10px; border-bottom: 1px solid #eee; vertical-align: middle; text-align: center; }
 
 /* ALIGNMENT TABLES */
-td:first-child, th:first-child { text-align: center; font-weight: 800; }
+td:first-child, th:first-child { font-weight: 800; }
 tbody tr td[style*="text-align:center"] { text-align: center !important; }
 
 /* FORMS */
