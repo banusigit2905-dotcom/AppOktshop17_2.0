@@ -1,0 +1,775 @@
+// --- LOGIKA SUARA ADMIN ---
+const notifSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+let lastAdminCounts = { redeem: -1, activation: -1, order: -1, return: -1, complaint: -1 };
+
+function playAdminTing() {
+    notifSound.play().catch(e => console.log("Interaksi user diperlukan untuk suara"));
+}
+// --- UTILS ---
+function generateOrderId() {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let result = 'ORD-';
+    for (let i = 0; i < 5; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+}
+
+// --- FIREBASE CONFIG ---
+const firebaseConfig = {
+    apiKey: "AIzaSyCkH8ACVHoRxYru1g9oPa9tMD4yBUYQcZM",
+    authDomain: "member-reseller-boci.firebaseapp.com",
+    projectId: "member-reseller-boci",
+    storageBucket: "member-reseller-boci.firebasestorage.app",
+    messagingSenderId: "279521008637",
+    appId: "1:279521008637:web:0923c9cb51818da7945794"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+let currentUser = null;
+let catalog = [];
+let cart = [];
+let currentPointsVal = 0; 
+let currentRankPage = 0; 
+let allRankings = [];
+
+// --- 1. AUTH LISTENER ---
+auth.onAuthStateChanged(async (user) => {
+    if (user) {
+        try {
+            const doc = await db.collection("users").doc(user.uid).get();
+            if (doc.exists) {
+                const userData = doc.data();
+                if (userData.role !== 'admin' && userData.isActive !== true) {
+    alert("Akun Anda ... belum aktif.");
+    auth.signOut(); // <--- Ini penyebabnya
+    return;
+}
+                currentUser = { id: user.uid, ...userData };
+                initApp();
+            } else {
+                auth.signOut();
+            }
+        } catch (err) {
+            console.error("Error checking user doc:", err);
+        }
+    } else {
+        document.getElementById("appWrapper").classList.add("hidden");
+        document.getElementById("loginScreen").classList.remove("hidden");
+    }
+});
+
+// --- 2. INITIALIZE APP ---
+function initApp() {
+    document.getElementById("loginScreen").classList.add("hidden");
+    document.getElementById("appWrapper").classList.remove("hidden");
+    document.getElementById("userGreetName").innerText = currentUser.nama || "User";
+    
+    if(document.getElementById("customId")) document.getElementById("customId").innerText = currentUser.customId || "-";
+    if(document.getElementById("profEmail")) document.getElementById("profEmail").value = currentUser.email || "";
+    if(document.getElementById("profNama")) document.getElementById("profNama").value = currentUser.nama || "";
+    if(document.getElementById("profHp")) document.getElementById("profHp").value = currentUser.hp || "";
+
+    renderSidebar();
+    syncCatalog();
+if (currentUser.role === 'reseller' && currentUser.isActive === true && !currentUser.bonusReceived) {
+        // Tambahkan bonus ke database
+        db.collection("users").doc(currentUser.id).update({
+            bonusReceived: true,
+            bonusPoints: 2000
+        }).then(() => {
+            alert("🎉 Selamat! Kamu mendapatkan Poin 2.000 pertama kali login setelah akun diaktifkan. Kumpulkan poinnya untuk ditukar dengan Voucher Pilihan!");
+            location.reload(); // Refresh untuk update poin
+        });
+}
+    if (currentUser.role === 'admin') {
+        // Tampilan Admin
+        document.getElementById("adminNotifHeader").classList.remove("hidden");
+        document.getElementById("btnTukarPoinHeader").classList.add("hidden");
+        if(document.getElementById("btnInboxHeader")) document.getElementById("btnInboxHeader").classList.add("hidden");
+        showSection('secAdminDashboard');
+        loadAdminData();
+    } else {
+        // Tampilan Reseller
+        document.getElementById("adminNotifHeader").classList.add("hidden");
+        document.getElementById("btnTukarPoinHeader").classList.remove("hidden");
+        if(document.getElementById("btnInboxHeader")) document.getElementById("btnInboxHeader").classList.remove("hidden"); 
+
+        showSection('secResellerDashboard');
+        loadResellerData();
+        loadResellerHistory();
+        loadResellerLeaderboard();
+        loadNotifications(); // Memanggil fitur Kotak Masuk
+    }
+}
+// --- 3. NOTIFICATION / INBOX SYSTEM ---
+function loadNotifications() {
+    db.collection("notifications")
+      .where("userId", "==", currentUser.id)
+      .orderBy("createdAt", "desc")
+      .onSnapshot(snap => {
+        const tableBody = document.getElementById("inboxTableBody");
+        const badgeInbox = document.getElementById("badgeInbox");
+        const badgeSidebar = document.getElementById("badgeSidebar");
+        
+        let unreadCount = 0;
+        let html = "";
+
+        if (snap.empty) {
+            if(tableBody) tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px;">Kosong</td></tr>';
+            if(badgeInbox) badgeInbox.style.display = "none";
+            return;
+        }
+
+        snap.forEach((doc, index) => {
+            const n = doc.data();
+            const id = doc.id;
+            if (!n.isRead) unreadCount++;
+            
+            const waktu = n.createdAt ? n.createdAt.toDate().toLocaleString('id-ID') : 'Baru saja';
+            const weight = n.isRead ? "normal" : "800"; 
+            const color = n.isRead ? "#666" : "#000";
+
+            html += `
+                <tr onclick="openMessage('${id}', '${n.title}', '${n.text}', '${waktu}')" 
+                    style="cursor:pointer; font-weight:${weight}; color:${color}; ${n.isRead ? '' : 'background:#fff9e6;'}">
+                    <td>${index + 1}</td>
+                    <td><small>${waktu}</small></td>
+                    <td>${n.title}</td>
+                    <td style="text-align: left;">${n.text.substring(0, 30)}...</td>
+                    <td>${n.isRead ? 'Dilihat' : '<b>Baru</b>'}</td>
+                </tr>
+            `;
+        });
+
+        if(tableBody) tableBody.innerHTML = html;
+        if(badgeInbox) {
+            badgeInbox.innerText = unreadCount;
+            badgeInbox.style.display = unreadCount > 0 ? "block" : "none";
+        }
+        if(badgeSidebar) {
+            badgeSidebar.innerText = unreadCount;
+            badgeSidebar.style.display = unreadCount > 0 ? "inline-block" : "none";
+        }
+    });
+}
+async function markAllAsRead() {
+    const batch = db.batch();
+    const snap = await db.collection("notifications")
+                        .where("userId", "==", currentUser.id)
+                        .where("isRead", "==", false).get();
+    
+    if (snap.empty) return alert("Semua pesan sudah dibaca.");
+    snap.forEach(doc => batch.update(doc.ref, { isRead: true }));
+    await batch.commit();
+    alert("Semua pesan ditandai telah dibaca.");
+}
+
+// --- 4. AUTH FORMS ---
+document.getElementById("loginForm").onsubmit = (e) => {
+    e.preventDefault();
+
+    const email = document.getElementById("loginEmail").value;
+    const pass = document.getElementById("loginPassword").value;
+
+    auth.signInWithEmailAndPassword(email, pass)
+        .then((cred) => {
+            // Login berhasil — onAuthStateChanged akan menangani tampilan selanjutnya
+        })
+        .catch((err) => {
+            alert(err.code + "\n" + err.message);
+        });
+};
+async function handleResetPassword() {
+    const email = document.getElementById("loginEmail").value;
+
+    if (!email) {
+        alert("Silakan masukkan email Anda di kolom input terlebih dahulu.");
+        return;
+    }
+
+    try {
+        const userSnapshot = await db.collection("users").where("email", "==", email).get();
+
+        if (userSnapshot.empty) {
+            alert("Email tidak terdaftar sebagai reseller.");
+            return;
+        }
+
+        const userDoc = userSnapshot.docs[0];
+        const userData = userDoc.data();
+        const userId = userDoc.id;
+
+        const now = new Date();
+        const monthKey = `${now.getFullYear()}-${now.getMonth() + 1}`;
+
+        let resetCount = userData.pwResetCount || 0;
+        let lastResetMonth = userData.pwLastResetMonth || "";
+
+        if (lastResetMonth !== monthKey) {
+            resetCount = 0;
+        }
+
+        if (resetCount >= 2) {
+            alert("Maaf, Anda sudah mencapai batas maksimal (2x) ganti password dalam bulan ini.");
+            return;
+        }
+
+        await auth.sendPasswordResetEmail(email);
+
+        await db.collection("users").doc(userId).update({
+            pwResetCount: resetCount + 1,
+            pwLastResetMonth: monthKey
+        });
+
+        alert("Email reset password telah dikirim! Silakan periksa Inbox/Spam email Anda.");
+
+    } catch (error) {
+        alert("Gagal memproses reset: " + error.message);
+    }
+}
+document.getElementById("registerForm").onsubmit = async (e) => {
+    e.preventDefault();
+    const nama = document.getElementById("regNama").value;
+    const email = document.getElementById("regEmail").value;
+    const pass = document.getElementById("regPassword").value;
+    const hp = document.getElementById("regHp").value;
+    
+    const customId = nama.replace(/\s/g, '').substring(0, 4).toLowerCase() + Math.floor(10000 + Math.random() * 90000);
+
+    try {
+        const cred = await auth.createUserWithEmailAndPassword(email, pass);
+        await db.collection("users").doc(cred.user.uid).set({
+            customId, nama, email, hp, role: 'reseller', isActive: false, createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        alert("Berhasil! ID: " + customId);
+        window.open(`https://wa.me/62895345452412?text=Halo Admin, aktivasi akun ID: ${customId}`, '_blank');
+        auth.signOut(); 
+    } catch (err) { alert("Gagal Daftar: " + err.message); }
+};
+
+// --- 5. RESELLER DATA LOGIC ---
+function loadResellerData() {
+    const startDate = document.getElementById("filterStart")?.value;
+    const endDate = document.getElementById("filterEnd")?.value;
+
+    db.collection("orders").where("resellerId", "==", currentUser.id).onSnapshot(sOrders => {
+        db.collection("redemptions").where("resellerId", "==", currentUser.id).where("status", "==", "Selesai").onSnapshot(sRedeems => {
+            
+            let totalSpendingAllTime = 0;
+            let totalTodayRupiah = 0;
+            const now = new Date();
+            const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+            const todayEnd = todayStart + (24 * 60 * 60 * 1000) - 1;
+
+            let allDocs = sOrders.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            allDocs.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+            
+            allDocs.forEach(o => {
+                const createdDate = o.createdAt ? o.createdAt.toDate() : new Date();
+                const createdTime = createdDate.getTime();
+                if(o.status === 'Selesai') { 
+                    totalSpendingAllTime += (o.total || 0); 
+                    if (createdTime >= todayStart && createdTime <= todayEnd) totalTodayRupiah += (o.total || 0);
+                }
+            });
+
+            let usedPoints = 0;
+sRedeems.docs.forEach(d => { usedPoints += (d.data().points || 0); });
+
+// Ambil bonus dari data user
+const bonus = currentUser.bonusPoints || 0;
+
+// Update rumus: Belanja + Bonus - Poin yang sudah ditukar
+currentPointsVal = Math.floor(totalSpendingAllTime / 100) - usedPoints + bonus;
+            if(document.getElementById("resTotalToday")) document.getElementById("resTotalToday").innerText = "Rp " + totalTodayRupiah.toLocaleString('id-ID');
+            document.getElementById("resPoin").innerText = currentPointsVal.toLocaleString('id-ID');
+            document.getElementById("displayMyPoints").innerText = currentPointsVal.toLocaleString('id-ID');
+
+            let filteredDocs = [];
+            if (startDate && endDate) {
+                const startRange = new Date(startDate).setHours(0, 0, 0, 0);
+                const endRange = new Date(endDate).setHours(23, 59, 59, 999);
+                filteredDocs = allDocs.filter(o => {
+                    const time = o.createdAt ? o.createdAt.toDate().getTime() : Date.now();
+                    return time >= startRange && time <= endRange;
+                });
+            } else {
+                filteredDocs = allDocs.filter(o => {
+                    const time = o.createdAt ? o.createdAt.toDate().getTime() : Date.now();
+                    return time >= todayStart && time <= todayEnd;
+                });
+                if(filteredDocs.length === 0) filteredDocs = allDocs.slice(0, 10);
+            }
+
+            const tableBody = document.getElementById("resellerOrderTable");
+            if (filteredDocs.length > 0) {
+                tableBody.innerHTML = filteredDocs.map(o => {
+                    let statusColor = o.status === 'Selesai' ? "#27ae60" : (o.status === 'Dibatalkan' ? "#c0392b" : "#f39c12");
+                    return `<tr>
+                        <td><small style="font-weight:bold; color:#d4af37;">${o.orderId || 'PROSES'}</small></td>
+                        <td>${o.produk}</td>
+                        <td>Rp ${(o.total || 0).toLocaleString('id-ID')}</td>
+                        <td><span style="color:${statusColor}; font-weight:800;">${o.status || 'pending'}</span></td>
+                    </tr>`;
+                }).join('');
+            } else {
+                tableBody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px; color:#666;">Belum ada pesanan.</td></tr>';
+            }
+        });
+    });
+}
+
+function resetOrderFilter() {
+    document.getElementById("filterStart").value = "";
+    document.getElementById("filterEnd").value = "";
+    loadResellerData();
+}
+
+// --- 6. ADMIN DATA LOGIC ---
+function loadAdminData() {
+    const startDate = document.getElementById("filterAdminStart")?.value;
+    const endDate = document.getElementById("filterAdminEnd")?.value;
+// --- DI DALAM loadAdminData() ---
+
+// 1. Tambahkan pengecekan suara di setiap listener (Order, Redeem, Aktivasi, dll)
+// Contoh pada Order:
+db.collection("orders").onSnapshot(snap => {
+    const pending = snap.docs.filter(d => d.data().status === 'pending').length;
+    if (lastAdminCounts.order !== -1 && pending > lastAdminCounts.order) playAdminTing();
+    lastAdminCounts.order = pending;
+    // ... sisa kode render tabel order
+});
+
+// 2. Listener Tabel Retur (BARU)
+db.collection("returns").onSnapshot(snap => {
+    const pending = snap.docs.filter(d => d.data().status === 'proses').length;
+    if (lastAdminCounts.return !== -1 && pending > lastAdminCounts.return) playAdminTing();
+    lastAdminCounts.return = pending;
+
+    document.getElementById("adminReturnTable").innerHTML = snap.docs.map(d => {
+        const r = d.data();
+        return `<tr>
+            <td>${r.nama}</td>
+            <td><b>${d.id.substring(0,6).toUpperCase()}</b></td>
+            <td>${r.produk}</td>
+            <td>${r.alasan}</td>
+            <td>${r.hp}</td>
+            <td>${r.status === 'proses' ? `<button class="btn-adm-action" onclick="updateStat('returns','${d.id}')">Selesai</button>` : '✅'}</td>
+        </tr>`;
+    }).join('');
+});
+
+// 3. Listener Tabel Keluhan (BARU)
+db.collection("complaints").onSnapshot(snap => {
+    const pending = snap.docs.filter(d => d.data().status === 'proses').length;
+    if (lastAdminCounts.complaint !== -1 && pending > lastAdminCounts.complaint) playAdminTing();
+    lastAdminCounts.complaint = pending;
+
+    document.getElementById("adminCompTable").innerHTML = snap.docs.map(d => {
+        const c = d.data();
+        return `<tr>
+            <td>${c.nama}</td>
+            <td><b>${d.id.substring(0,6).toUpperCase()}</b></td>
+            <td>${c.pesan}</td>
+            <td>${c.hp}</td>
+            <td>${c.status === 'proses' ? `<button class="btn-adm-action" onclick="updateStat('complaints','${d.id}')">Selesai</button>` : '✅'}</td>
+        </tr>`;
+    }).join('');
+});
+    db.collection("users").where("role", "==", "reseller").where("isActive", "==", false).onSnapshot(snap => {
+        if(document.getElementById("badgeActivation")) document.getElementById("badgeActivation").innerText = snap.size;
+    });
+
+    db.collection("orders").onSnapshot(snap => {
+        let allOrders = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        allOrders.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+
+        let filtered = allOrders;
+        if (startDate && endDate) {
+            const startRange = new Date(startDate).setHours(0, 0, 0, 0);
+            const endRange = new Date(endDate).setHours(23, 59, 59, 999);
+            filtered = allOrders.filter(o => {
+                const created = o.createdAt?.toDate().getTime();
+                return created >= startRange && created <= endRange;
+            });
+        }
+
+        let pendingCount = 0, totalUang = 0;
+        document.getElementById("adminOrderTable").innerHTML = filtered.map(o => {
+            if(o.status === 'pending') pendingCount++;
+            if(o.status === 'Selesai') totalUang += (o.total || 0);
+            return `<tr><td>${o.resellerName}</td><td><b>${o.orderId}</b></td><td>${o.produk}</td><td>${o.status === 'pending' ? `<button onclick="updateStat('orders','${o.id}')">Selesai</button>` : '✅'}</td></tr>`;
+        }).join('');
+        
+        document.getElementById("badgeOrder").innerText = pendingCount;
+        document.getElementById("admQty").innerText = filtered.length;
+        document.getElementById("admTotal").innerText = "Rp " + totalUang.toLocaleString();
+    });
+
+    db.collection("returns").onSnapshot(snap => {
+        if(document.getElementById("badgeReturn")) document.getElementById("badgeReturn").innerText = snap.docs.filter(d => d.data().status === 'proses').length;
+        document.getElementById("adminReturnTable").innerHTML = snap.docs.map(d => {
+            const r = d.data();
+            return `<tr><td><b>${r.nama}</b></td><td>${r.produk}</td><td>${r.alasan}</td><td>${r.hp}</td><td>${r.status === 'proses' ? `<button onclick="updateStat('returns','${d.id}')">Selesai</button>` : '✅'}</td></tr>`;
+        }).join('');
+    });
+
+    db.collection("complaints").onSnapshot(snap => {
+        if(document.getElementById("badgeComplaint")) document.getElementById("badgeComplaint").innerText = snap.docs.filter(d => d.data().status === 'proses').length;
+        document.getElementById("adminCompTable").innerHTML = snap.docs.map(d => {
+            const c = d.data();
+            return `<tr><td><b>${c.nama}</b></td><td>${c.hp}</td><td>${c.pesan}</td><td>${c.status === 'proses' ? `<button onclick="updateStat('complaints','${d.id}')">Selesai</button>` : '✅'}</td></tr>`;
+        }).join('');
+    });
+
+    db.collection("redemptions").onSnapshot(snap => {
+        let totalOut = 0;
+        document.getElementById("adminRedeemTable").innerHTML = snap.docs.map(d => {
+            const r = d.data();
+            if (r.status === 'Selesai') totalOut += (r.points || 0);
+            return `<tr><td><b>${r.resellerName}</b></td><td>${r.points.toLocaleString()}</td><td>${r.status === 'proses' ? `<button onclick="updateStat('redemptions','${d.id}')">Selesai</button>` : '✅'}</td></tr>`;
+        }).join('');
+        document.getElementById("badgeRedeem").innerText = snap.docs.filter(d => d.data().status === 'proses').length;
+        document.getElementById("admPoin").innerText = totalOut.toLocaleString();
+    });
+}
+
+function resetAdminOrderFilter() {
+    document.getElementById("filterAdminStart").value = "";
+    document.getElementById("filterAdminEnd").value = "";
+    loadAdminData();
+}
+
+// --- 7. HISTORY & LEADERBOARD ---
+function loadResellerHistory() {
+    db.collection("returns").where("resellerId", "==", currentUser.id).onSnapshot(s => {
+        document.getElementById("resellerReturnHistory").innerHTML = s.docs.map(doc => {
+            const d = doc.data();
+            return `<tr><td>${d.produk}</td><td>${d.alasan}</td><td>${d.hp}</td><td style="color:${d.status === 'Selesai' ? 'green' : 'orange'}">${d.status}</td></tr>`;
+        }).join('');
+    });
+    db.collection("complaints").where("resellerId", "==", currentUser.id).onSnapshot(s => {
+        document.getElementById("resellerCompHistory").innerHTML = s.docs.map(doc => {
+            const d = doc.data();
+            return `<tr><td>${d.nama}</td><td>${d.pesan}</td><td>${d.hp}</td><td style="color:${d.status === 'Selesai' ? 'green' : 'orange'}">${d.status}</td></tr>`;
+        }).join('');
+    });
+}
+
+function loadResellerLeaderboard() {
+    db.collection("users").where("role", "==", "reseller").onSnapshot(sUsers => {
+        db.collection("orders").where("status", "==", "Selesai").onSnapshot(sOrders => {
+            const allOrders = sOrders.docs.map(d => d.data());
+            allRankings = sUsers.docs.map(u => {
+                const total = allOrders.filter(o => o.resellerId === u.id).reduce((sum, o) => sum + (o.total || 0), 0);
+                return { 
+                    id: u.id, 
+                    nama: u.data().nama, 
+                    poin: Math.floor(total / 100) + (u.data().bonusPoints || 0) // LEADERBOARD DENGAN BONUS
+                };
+            }).sort((a, b) => b.poin - a.poin);
+
+            const myRankIndex = allRankings.findIndex(r => r.id === currentUser.id);
+            if(document.getElementById("resMyRank")) document.getElementById("resMyRank").innerText = myRankIndex !== -1 ? "#" + (myRankIndex + 1) : "-";
+            renderRankTable();
+        });
+    });
+}
+
+function renderRankTable() {
+    const startIdx = currentRankPage * 10;
+    const pageData = allRankings.slice(startIdx, startIdx + 10);
+    document.getElementById("resellerLeaderboardTable").innerHTML = pageData.map((res, i) => `
+        <tr><td>${startIdx + i + 1}</td><td>${res.nama}</td><td style="text-align:right"><b>${res.poin.toLocaleString()} Poin</b></td></tr>
+    `).join('') || '<tr><td colspan="3">Memuat...</td></tr>';
+    if(document.getElementById("rankPageInfo")) document.getElementById("rankPageInfo").innerText = `Rangking ${startIdx + 1} - ${Math.min(startIdx + 10, allRankings.length)}`;
+}
+
+function changeRankPage(dir) {
+    if (dir === 1 && (currentRankPage + 1) * 10 < allRankings.length) currentRankPage++;
+    else if (dir === -1 && currentRankPage > 0) currentRankPage--;
+    renderRankTable();
+}
+
+// --- 8. CATALOG MANAGEMENT ---
+function syncCatalog() {
+    db.collection("products").orderBy("kategori").onSnapshot(s => {
+        catalog = s.docs.map(d => ({ id: d.id, ...d.data() }));
+        const cs = document.getElementById("ordCatSelect");
+        if(cs) {
+            const cats = [...new Set(catalog.map(p => p.kategori || "Umum"))];
+            cs.innerHTML = '<option value="Semua">Semua</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join('');
+        }
+        filterProductsByCategory();
+
+        if (currentUser && currentUser.role === 'admin') {
+            document.getElementById("adminCatalogTable").innerHTML = catalog.map(p => `
+                <tr><td><b>${p.nama}</b></td><td>${p.kategori}</td><td>Rp ${p.harga.toLocaleString()}</td>
+                <td><button onclick="editProduct('${p.id}')">Edit</button> <button onclick="if(confirm('Hapus?')) db.collection('products').doc('${p.id}').delete()">Hapus</button></td></tr>
+            `).join('');
+        }
+    });
+}
+
+function filterProductsByCategory() {
+    const cat = document.getElementById("ordCatSelect")?.value || "Semua";
+    const ps = document.getElementById("ordProdSelect");
+    if(!ps) return;
+    let f = (cat === "Semua") ? catalog : catalog.filter(p => p.kategori === cat);
+    ps.innerHTML = f.map(p => `<option value="${p.id}">${p.nama} - Rp${p.harga.toLocaleString()}</option>`).join('');
+}
+
+// --- 9. ORDERING SYSTEM ---
+function addToCart() {
+    const pid = document.getElementById("ordProdSelect").value;
+    const qty = parseInt(document.getElementById("ordQtyInput").value);
+    const p = catalog.find(item => item.id === pid);
+    if (p && qty > 0) { cart.push({ nama: p.nama, qty, subtotal: p.harga * qty }); renderCart(); }
+}
+
+function renderCart() {
+    const tb = document.getElementById("cartTableBody"); let t = 0;
+    tb.innerHTML = cart.map((item, index) => { t += item.subtotal; return `<tr><td>${item.nama} (${item.qty}x)</td><td>Rp ${item.subtotal.toLocaleString()}</td><td onclick="cart.splice(${index},1);renderCart()" style="color:red;cursor:pointer">X</td></tr>`; }).join('');
+    document.getElementById("cartTotalText").innerText = "Total: Rp " + t.toLocaleString();
+}
+
+document.getElementById("orderFormFinal").onsubmit = async (e) => {
+    e.preventDefault();
+    const orderNo = generateOrderId();
+    const cust = document.getElementById("ordCustomer").value;
+    const hp = document.getElementById("ordHp").value;
+    const pay = document.getElementById("ordPayment").value;
+    const total = cart.reduce((s, i) => s + i.subtotal, 0);
+    const detail = cart.map(i => `${i.nama} (${i.qty}x)`).join(", ");
+    const detailWA = cart.map(i => `- ${i.nama} (${i.qty}x)`).join("%0A");
+
+    try {
+        await db.collection("orders").add({ 
+            orderId: orderNo, resellerId: currentUser.id, resellerName: currentUser.nama, 
+            customerName: cust, customerHp: hp, produk: detail, total, 
+            jumlah: cart.reduce((s, i) => s + i.qty, 0), metode: pay, status: "pending", 
+            createdAt: firebase.firestore.FieldValue.serverTimestamp() 
+        });
+        const waText = `*PESANAN BARU*%0AOrder: ${orderNo}%0APenerima: ${cust}%0AProduk:%0A${detailWA}%0ATotal: Rp ${total.toLocaleString()}`;
+        closeOrderModal(); 
+        window.open(`https://wa.me/62895345452412?text=${waText}`, '_blank');
+    } catch(err) { alert("Gagal: " + err.message); }
+};
+
+// --- 10. REDEEM POINTS SYSTEM ---
+function openRedeemModal() { 
+    document.getElementById("redeemModal").classList.remove("hidden"); 
+    document.getElementById("displayMyPoints").innerText = currentPointsVal.toLocaleString();
+    goToRedeemStep1(); 
+}
+function goToRedeemStep1() { document.getElementById("redeemStep1").classList.remove("hidden"); document.getElementById("redeemStep2").classList.add("hidden"); }
+function goToRedeemStep2() { 
+    const amt = parseInt(document.getElementById("redeemAmountSelect").value);
+    if(currentPointsVal < amt) return alert("Poin tidak cukup!");
+    document.getElementById("redName").value = currentUser.nama;
+    document.getElementById("redWa").value = currentUser.hp;
+    document.getElementById("redeemStep1").classList.add("hidden");
+    document.getElementById("redeemStep2").classList.remove("hidden");
+}
+
+document.getElementById("formRedeemPoints").onsubmit = async (e) => {
+    e.preventDefault();
+    const amt = parseInt(document.getElementById("redeemAmountSelect").value);
+    const np = document.getElementById("redName").value;
+    const wp = document.getElementById("redWa").value;
+
+    try {
+        await db.collection("redemptions").add({
+            resellerId: currentUser.id, resellerName: currentUser.nama, points: amt,
+            namaPenerima: np, whatsapp: wp, status: "proses", 
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        alert("Berhasil! Menunggu konfirmasi admin.");
+        closeRedeemModal();
+        window.open(`https://wa.me/62895345452412?text=Penukaran Poin ${amt} - ${np}`, '_blank');
+    } catch (err) { alert("Error: " + err.message); }
+};
+
+// --- 11. ADMIN ACTIONS ---
+async function activateUser(uid) {
+    if(confirm("Aktifkan?")) {
+        await db.collection("users").doc(uid).update({ isActive: true });
+        
+        // KIRIM PESAN AKTIVASI
+        const skrg = new Date().toLocaleString('id-ID');
+        await db.collection("notifications").add({
+            userId: uid,
+            title: "🎉 Akun Telah Aktif",
+            text: `Akun kamu telah aktif, ${skrg}. Selamat bergabung di OKTSHOP17!`,
+            isRead: false,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+    }
+}
+async function updateStat(coll, id) {
+    if (!confirm("Tandai Selesai?")) return;
+    try {
+        const docRef = db.collection(coll).doc(id);
+        const docSnap = await docRef.get();
+        const data = docSnap.data();
+        await docRef.update({ status: "Selesai" });
+
+        let notifTitle = ""; let notifText = ""; let targetUser = data.resellerId;
+        if (coll === 'orders') {
+            notifTitle = "📦 Pesanan Selesai";
+            notifText = `Pesanan No. Order ${data.orderId || '-'} Telah Selesai dikonfirmasi oleh Admin. Terimakasih!`;
+        } else if (coll === 'redemptions') {
+            notifTitle = "🎁 Penukaran Berhasil";
+            notifText = `Berhasil tukar poin sejumlah ${data.points ? data.points.toLocaleString('id-ID') : '0'} Poin. Voucher/Saldo sedang dikirim.`;
+        } else if (coll === 'returns') {
+            notifTitle = "📥 Retur Selesai";
+            notifText = `Laporan retur produk ${data.produk} Anda telah dinyatakan Selesai.`;
+        }
+
+        if (notifTitle !== "" && targetUser) {
+            // Tambahkan ini sebelum alert "Berhasil!" di pengajuan redeem
+await db.collection("notifications").add({
+    userId: currentUser.id,
+    title: "⏳ Pengajuan Tukar Poin",
+    text: `Pengajuan tukar poin sebesar ${amt.toLocaleString()} poin sedang diproses. Mohon tunggu konfirmasi admin.`,
+    isRead: false,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+});
+        }
+        alert("Berhasil diperbarui & Notifikasi dikirim!");
+    } catch (err) { alert("Gagal memperbarui status."); }
+}
+
+// --- 12. CATALOG FORM ---
+function resetProductForm() {
+    document.getElementById("adminProdId").value = "";
+    document.getElementById("adminProductForm").reset();
+    document.getElementById("formCatalogTitle").innerText = "📦 Tambah Produk";
+}
+document.getElementById("adminProductForm").onsubmit = async (e) => {
+    e.preventDefault();
+    const id = document.getElementById("adminProdId").value;
+    const data = {
+        nama: document.getElementById("adminProdName").value,
+        kategori: document.getElementById("adminProdCat").value,
+        harga: parseInt(document.getElementById("adminProdPrice").value),
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+    if(id) await db.collection("products").doc(id).update(data);
+    else await db.collection("products").add({...data, createdAt: data.updatedAt});
+    alert("Berhasil!"); resetProductForm();
+};
+
+function editProduct(id) {
+    const p = catalog.find(x => x.id === id);
+    if(p) {
+        document.getElementById("adminProdId").value = p.id;
+        document.getElementById("adminProdName").value = p.nama;
+        document.getElementById("adminProdCat").value = p.kategori;
+        document.getElementById("adminProdPrice").value = p.harga;
+        document.getElementById("formCatalogTitle").innerText = "📝 Edit Produk";
+    }
+}
+
+// --- 13. UI HELPERS ---
+function renderSidebar() {
+    const nav = document.getElementById("sidebarNav");
+    let menuItems = "";
+    if (currentUser.role === 'admin') {
+        menuItems = `
+            <div class="nav-item" onclick="showSection('secAdminDashboard')">📊 Dashboard Admin</div>
+            <div class="nav-item" onclick="showSection('secAdminActivation')">🔑 Aktivasi Reseller</div>
+            <div class="nav-item" onclick="showSection('secAdminCatalog')">📦 Kelola Katalog</div>
+            <div class="nav-item" onclick="showSection('secAdminRedeem')">🎁 Penukaran Poin</div>
+            <div class="nav-item" onclick="showSection('secAdminReturn')">📥 Returan Masuk</div>
+            <div class="nav-item" onclick="showSection('secAdminComplaint')">📢 Keluhan Masuk</div>
+        `;
+    }  else {
+        menuItems = `
+            <div class="nav-item" onclick="showSection('secResellerDashboard')">📊 Dashboard Reseller</div>
+            <div class="nav-item" onclick="showSection('secResellerInbox')">📩 Kotak Masuk <span id="badgeSidebar" style="background:red; color:white; border-radius:50%; padding:2px 6px; font-size:9px; margin-left:5px; display:none;">0</span></div>
+            <div class="nav-item" onclick="showSection('secResellerReturn')">📦 Retur Barang</div>
+            <div class="nav-item" onclick="showSection('secResellerComplaint')">📢 Laporan Keluhan</div>
+        `;
+    }
+    menuItems += `<div class="nav-item" onclick="showSection('secProfile')">👤 Profil Akun</div>`;
+    nav.innerHTML = menuItems;
+}
+
+function showSection(id) {
+    document.querySelectorAll('.app-section').forEach(s => s.classList.add('hidden'));
+    const target = document.getElementById(id);
+    if(target) target.classList.remove('hidden');
+    if(id === 'secAdminActivation') loadActivationList();
+    if(id === 'secAdminRankings') loadRankings();
+    toggleSidebar(false);
+}
+
+function loadActivationList() {
+    db.collection("users").where("role", "==", "reseller").where("isActive", "==", false).onSnapshot(snap => {
+        document.getElementById("adminActivationTable").innerHTML = snap.docs.map(doc => {
+            const u = doc.data();
+            return `<tr><td>${u.customId}</td><td>${u.nama}</td><td>${u.email}</td><td><button onclick="activateUser('${doc.id}')">AKTIFKAN</button></td></tr>`;
+        }).join('');
+    });
+}
+// Fungsi untuk membuka detail pesan
+async function openMessage(id, title, text, time) {
+    document.getElementById("msgModalTitle").innerText = title;
+    document.getElementById("msgModalBody").innerText = text;
+    document.getElementById("msgModalTime").innerText = time;
+    document.getElementById("messageModal").classList.remove("hidden");
+
+    // Tandai sebagai dibaca di database agar tidak tebal lagi
+    await db.collection("notifications").doc(id).update({ isRead: true });
+}
+
+function closeMessageModal() {
+    document.getElementById("messageModal").classList.add("hidden");
+}
+async function loadRankings() {
+    const table = document.getElementById("adminRankTable");
+    if (!table) return;
+    const us = await db.collection("users").where("role", "==", "reseller").get();
+    const os = await db.collection("orders").where("status", "==", "Selesai").get();
+    const allOrders = os.docs.map(d => d.data());
+    let ranks = us.docs.map(u => {
+        const total = allOrders.filter(o => o.resellerId === u.id).reduce((s, o) => s + (o.total || 0), 0);
+        return { nama: u.data().nama, total, poin: Math.floor(total / 100) };
+    }).sort((a, b) => b.total - a.total);
+    table.innerHTML = ranks.map((r, i) => `<tr><td>${i+1}</td><td>${r.nama}</td><td>${r.poin}</td><td>Rp ${r.total.toLocaleString()}</td></tr>`).join('');
+}
+
+document.getElementById("editProfileForm").onsubmit = async (e) => { e.preventDefault(); await db.collection("users").doc(currentUser.id).update({ nama: document.getElementById("profNama").value, hp: document.getElementById("profHp").value }); alert("Updated!"); };
+document.getElementById("resellerReturnForm").onsubmit = async (e) => { e.preventDefault(); await db.collection("returns").add({ resellerId: currentUser.id, nama: currentUser.nama, produk: document.getElementById("retProd").value, alasan: document.getElementById("retReason").value, hp: document.getElementById("retHp").value, status: "proses", createdAt: firebase.firestore.FieldValue.serverTimestamp() }); alert("Dikirim!"); e.target.reset(); };
+document.getElementById("resellerComplaintForm").onsubmit = async (e) => { e.preventDefault(); await db.collection("complaints").add({ resellerId: currentUser.id, nama: document.getElementById("compNama").value, hp: document.getElementById("compHp").value, pesan: document.getElementById("compText").value, status: "proses", createdAt: firebase.firestore.FieldValue.serverTimestamp() }); alert("Dikirim!"); e.target.reset(); };
+
+function logout() { auth.signOut(); }
+function toggleSidebar(f) { document.getElementById("sidebar").classList.toggle("active", f); document.getElementById("sidebarOverlay").classList.toggle("active", f); }
+function switchAuth(mode) {
+    const loginForm = document.getElementById("loginForm");
+    const registerForm = document.getElementById("registerForm");
+    const tabLog = document.getElementById("tLog");
+    const tabReg = document.getElementById("tReg");
+
+    if (mode === 'login') {
+        loginForm.classList.remove("hidden");
+        registerForm.classList.add("hidden");
+        tabLog.classList.add("active");
+        tabReg.classList.remove("active");
+    } else {
+        loginForm.classList.add("hidden");
+        registerForm.classList.remove("hidden");
+        tabLog.classList.remove("active");
+        tabReg.classList.add("active");
+    }
+}
+function openOrderModal() { document.getElementById("orderModal").classList.remove("hidden"); cart = []; renderCart(); goToStep1(); }
+function closeOrderModal() { document.getElementById("orderModal").classList.add("hidden"); }
+function closeRedeemModal() { document.getElementById("redeemModal").classList.add("hidden"); }
+function goToStep2() { if(!cart.length) return alert("Pilih produk!"); document.getElementById("orderStep1").classList.add("hidden"); document.getElementById("orderStep2").classList.remove("hidden"); }
+function goToStep1() { document.getElementById("orderStep1").classList.remove("hidden"); document.getElementById("orderStep2").classList.add("hidden"); }
