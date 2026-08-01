@@ -1,0 +1,81 @@
+/* =====================================================================
+   REFERRAL.CSS — Style untuk halaman Referral & Tangga Klaim Poin
+   File terpisah dari style.css, dimuat setelahnya di index.html.
+   ===================================================================== */
+
+.ref-box {
+    background: linear-gradient(135deg, #3a2a10, #241708);
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 16px;
+}
+.ref-box .label { color: #d8cdb8; font-size: 11px; font-weight: 700; margin-bottom: 8px; }
+.ref-code-row {
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(255,255,255,0.08);
+    border: 1.5px dashed var(--gold);
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-bottom: 10px;
+}
+.ref-code-row .code { flex: 1; font-size: 18px; font-weight: 800; color: var(--gold); letter-spacing: 1px; }
+.ref-code-row .btn-copy { background: var(--gold); color: #2a1e0a; border: none; padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 800; }
+.btn-share { width: 100%; background: #25d366; color: #fff; border: none; padding: 11px; border-radius: 10px; font-weight: 800; font-size: 12.5px; display: flex; align-items: center; justify-content: center; gap: 6px; }
+
+/* Ringkasan pill */
+.summary-row { display: flex; gap: 8px; margin-bottom: 16px; }
+.summary-pill { flex: 1; text-align: center; padding: 12px 6px; border-radius: 12px; font-size: 10.5px; font-weight: 700; }
+.summary-pill b { display: block; font-size: 18px; margin-bottom: 2px; }
+.sp-total { background: #eee2c9; color: #5a4a38; }
+.sp-active { background: #dcecd4; color: #3c6b2a; }
+.sp-points { background: #fdeec0; color: #8a5a12; }
+
+/* Progress menuju milestone berikutnya */
+.next-milestone { background: #fff6de; border: 1.5px dashed #c9772a; border-radius: 14px; padding: 14px 16px; margin-bottom: 18px; }
+.next-milestone .top-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 4px; }
+.next-milestone .top-row .txt { font-size: 12px; font-weight: 700; color: #c9772a; }
+.next-milestone .top-row .count { font-size: 13px; font-weight: 800; color: var(--text-dark); }
+.next-milestone .hint { font-size: 11px; color: #8a7a66; }
+.next-milestone .hint b { color: #c9772a; }
+
+/* Tangga referral */
+.ladder-title { font-size: 13px; font-weight: 800; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+.ladder { position: relative; padding-left: 6px; }
+.ladder::before { content: ""; position: absolute; left: 19px; top: 8px; bottom: 8px; width: 2px; background: #e0d4bc; }
+.rung { position: relative; display: flex; align-items: center; gap: 14px; padding: 10px 0; }
+.rung-dot { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; flex-shrink: 0; z-index: 1; border: 3px solid var(--card); }
+.rung.done .rung-dot { background: #dcecd4; color: #3c6b2a; }
+.rung.current .rung-dot { background: #c9772a; color: #fff; box-shadow: 0 0 0 4px rgba(201,119,42,0.2); }
+.rung.locked .rung-dot { background: #f0e9d8; color: #b8a888; }
+.rung-info { flex: 1; }
+.rung-info .title { font-size: 13px; font-weight: 800; margin-bottom: 2px; color: var(--text-dark); }
+.rung.locked .rung-info .title { color: #a89878; }
+.rung-info .desc { font-size: 11px; color: #8a7a66; }
+.rung-badge { font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 20px; white-space: nowrap; }
+.rung.done .rung-badge { background: #dcecd4; color: #3c6b2a; }
+.rung.locked .rung-badge { background: #f0e9d8; color: #a89878; }
+.btn-claim {
+    background: linear-gradient(135deg, #f2a93b, #c9772a);
+    color: #fff; border: none; padding: 7px 14px; border-radius: 20px;
+    font-size: 11px; font-weight: 800; white-space: nowrap;
+    animation: claimPulse 1.4s infinite;
+}
+@keyframes claimPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(242,169,59,0.5); }
+    50% { box-shadow: 0 0 0 6px rgba(242,169,59,0); }
+}
+
+/* Tabel daftar reseller diundang */
+.ref-table-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.ref-table-header h4 { margin: 0; font-size: 14px; color: var(--text-dark); }
+.ref-table-header .count { font-size: 11px; color: #8a7a66; }
+.ref-list { display: flex; flex-direction: column; gap: 8px; }
+.ref-row { background: #fff; border-radius: 12px; padding: 11px 13px; display: flex; align-items: center; justify-content: space-between; gap: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+.ref-avatar { width: 34px; height: 34px; border-radius: 50%; background: #eee2c9; color: #8a5a1f; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; flex-shrink: 0; }
+.ref-info { flex: 1; min-width: 0; }
+.ref-name { font-size: 13px; font-weight: 700; margin-bottom: 2px; color: var(--text-dark); }
+.ref-date { font-size: 10.5px; color: #8a7a66; }
+.status-tag { font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 20px; white-space: nowrap; flex-shrink: 0; }
+.status-active { background: #dcecd4; color: #3c6b2a; }
+.status-pending { background: #f0e9d8; color: #a89060; }
+.empty-state { text-align: center; padding: 30px 20px; color: #a89878; font-size: 12px; }
