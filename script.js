@@ -514,6 +514,19 @@ async function handleResetPassword() {
 }
 document.getElementById("registerForm").onsubmit = async (e) => {
     e.preventDefault();
+
+    // Wajib centang persetujuan Kebijakan Privasi dulu
+    const agreeCheckbox = document.getElementById("agreePrivacy");
+    if (agreeCheckbox && !agreeCheckbox.checked) {
+        if (agreeCheckbox.disabled) {
+            document.getElementById("privacyPolicyBox")?.scrollIntoView({ behavior: "smooth", block: "center" });
+            alert("Silakan baca Kebijakan Privasi sampai bawah terlebih dahulu sebelum mendaftar.");
+        } else {
+            alert("Silakan centang persetujuan Kebijakan Privasi terlebih dahulu.");
+        }
+        return;
+    }
+
     const nama = document.getElementById("regNama").value;
     const email = document.getElementById("regEmail").value;
     const pass = document.getElementById("regPassword").value;
@@ -533,7 +546,9 @@ document.getElementById("registerForm").onsubmit = async (e) => {
         const cred = await auth.createUserWithEmailAndPassword(email, pass);
         await db.collection("users").doc(cred.user.uid).set({
             customId, nama, email, hp, role: 'reseller', isActive: false, createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-            referredBy: referrer ? referrer.id : null
+            referredBy: referrer ? referrer.id : null,
+            privacyPolicyAgreed: true,
+            privacyPolicyAgreedAt: firebase.firestore.FieldValue.serverTimestamp()
         });
 
         // Catat ke koleksi referrals kalau memang diundang orang lain (dipakai oleh referral.js)
