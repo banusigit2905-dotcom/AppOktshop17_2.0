@@ -251,31 +251,67 @@ async function claimMilestone(count, bonus) {
 }
 
 // ---------------------------------------------------------------
-// 6) KEBIJAKAN PRIVASI DI FORM DAFTAR — checkbox baru aktif setelah di-scroll sampai bawah
+// 6) KEBIJAKAN PRIVASI — dibuka lewat tombol, wajib di-scroll sampai bawah DI DALAM MODAL
 // ---------------------------------------------------------------
-(function setupPrivacyPolicyGate() {
+function openPrivacyModal() {
+    const modal = document.getElementById("privacyModal");
+    const box = document.getElementById("privacyPolicyBox");
+    const btn = document.getElementById("btnAgreePrivacy");
+    if (!modal || !box || !btn) return;
+
+    modal.classList.remove("hidden");
+    box.scrollTop = 0; // selalu mulai dari atas tiap dibuka
+
+    // Kalau checkbox sudah pernah disetujui sebelumnya, tombol langsung aktif juga
+    const alreadyAgreed = document.getElementById("agreePrivacy")?.checked;
+    setAgreeButtonState(alreadyAgreed);
+}
+
+function closePrivacyModal() {
+    document.getElementById("privacyModal")?.classList.add("hidden");
+}
+
+function setAgreeButtonState(enabled) {
+    const btn = document.getElementById("btnAgreePrivacy");
+    if (!btn) return;
+    btn.disabled = !enabled;
+    btn.style.opacity = enabled ? "1" : "0.5";
+    btn.textContent = enabled ? "✅ SAYA SETUJU" : "Baca sampai bawah dulu ⬇️";
+}
+
+function confirmAgreePrivacy() {
+    const checkbox = document.getElementById("agreePrivacy");
+    const label = document.getElementById("privacyCheckboxLabel");
+    const text = document.getElementById("privacyCheckboxText");
+    if (checkbox) checkbox.checked = true;
+    if (label) label.classList.add("ready");
+    if (text) text.textContent = "✅ Kebijakan Privasi sudah disetujui";
+    closePrivacyModal();
+}
+
+(function setupPrivacyModalScrollListener() {
     function init() {
         const box = document.getElementById("privacyPolicyBox");
-        const checkbox = document.getElementById("agreePrivacy");
-        const label = document.getElementById("privacyCheckboxLabel");
-        const text = document.getElementById("privacyCheckboxText");
-        if (!box || !checkbox) return;
+        if (!box) return;
 
-        function enableCheckbox() {
-            if (checkbox.disabled) {
-                checkbox.disabled = false;
-                label.classList.add("ready");
-                text.textContent = "Saya sudah membaca dan menyetujui Kebijakan Privasi di atas";
-            }
+        // Kalau isinya pendek dan langsung muat semua tanpa perlu scroll
+        function checkInitialFit() {
+            if (box.scrollHeight <= box.clientHeight + 4) setAgreeButtonState(true);
         }
-
-        // Kalau kontennya pendek (muat semua tanpa perlu scroll), langsung aktifkan
-        if (box.scrollHeight <= box.clientHeight + 4) enableCheckbox();
 
         box.addEventListener("scroll", () => {
             const scrolledToBottom = box.scrollTop + box.clientHeight >= box.scrollHeight - 8;
-            if (scrolledToBottom) enableCheckbox();
+            if (scrolledToBottom) setAgreeButtonState(true);
         });
+
+        // Cek ulang tiap modal dibuka (ukuran box baru kelihatan setelah modal tampil)
+        const modal = document.getElementById("privacyModal");
+        if (modal) {
+            const observer = new MutationObserver(() => {
+                if (!modal.classList.contains("hidden")) setTimeout(checkInitialFit, 50);
+            });
+            observer.observe(modal, { attributes: true, attributeFilter: ["class"] });
+        }
     }
 
     if (document.readyState === "loading") {
