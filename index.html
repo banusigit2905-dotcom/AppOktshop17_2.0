@@ -50,46 +50,13 @@
                     <input type="text" id="regRefCode" placeholder="Kode Referral (opsional)">
                 </div>
 
-                <div class="privacy-box-label">Kebijakan Privasi <span style="font-weight:400; color:#8a7a66;">(scroll sampai bawah untuk menyetujui)</span></div>
-                <div id="privacyPolicyBox" class="privacy-policy-box">
-                    <p><strong>KEBIJAKAN PRIVASI OKTSHOP17</strong></p>
-                    <p>Selamat datang di OKTSHOP17 (www.oktshop17.online). Kami sangat menghargai kepercayaan Anda sebagai mitra bisnis dan reseller kami. Kebijakan Privasi ini dibuat untuk menjelaskan bagaimana kami mengumpulkan, menyimpan, melindungi, dan menggunakan data pribadi Anda, khususnya nomor WhatsApp dan alamat email.</p>
-                    <p>Dengan mendaftar, mengakses, atau menggunakan layanan di platform OKTSHOP17, Anda dianggap telah membaca, memahami, dan menyetujui seluruh ketentuan dalam Kebijakan Privasi ini.</p>
-
-                    <p><strong>1. Informasi yang Kami Kumpulkan</strong></p>
-                    <p>Untuk keperluan operasional kemitraan dan pengelolaan reseller, kami mengumpulkan informasi pribadi yang Anda berikan secara sukarela saat pendaftaran atau pengisian formulir, meliputi:</p>
-                    <p>Nama Toko: OKTSHOP17<br>
-                    Nomor WhatsApp Aktif: 0895-3454-52412<br>
-                    Alamat Email Aktif: OKTSHOP17@GMAIL.COM<br>
-                    Detail Pengiriman (Alamat Lengkap untuk keperluan distribusi stok/pesanan)</p>
-
-                    <p><strong>2. Cara Kami Menggunakan Data Anda</strong></p>
-                    <p>Kami berkomitmen untuk tidak menjual, menyewakan, atau menyalahgunakan data pribadi Anda kepada pihak ketiga. Data WhatsApp dan email Anda hanya digunakan untuk kepentingan internal berikut:</p>
-                    <p><strong>Verifikasi Akun:</strong> Mengonfirmasi identitas Anda sebagai reseller resmi OKTSHOP17.</p>
-                    <p><strong>Komunikasi Operasional:</strong> Mengirimkan notifikasi status pemesanan, konfirmasi pembayaran (Transfer Bank/QRIS), resi pengiriman, serta informasi retur barang.</p>
-                    <p><strong>Layanan Pelanggan:</strong> Menghubungi Anda secara langsung melalui WhatsApp atau email untuk menyelesaikan kendala teknis atau keluhan pelanggan.</p>
-                    <p><strong>Informasi Produk:</strong> Mengirimkan pembaruan katalog, informasi stok produk, atau program promo khusus reseller (Anda dapat memilih untuk berhenti berlangganan kapan saja).</p>
-
-                    <p><strong>3. Keamanan dan Penyimpanan Data</strong></p>
-                    <p>Kami menjaga keamanan data Anda dengan sangat serius.</p>
-                    <p><strong>Perlindungan SSL:</strong> Website kami menggunakan sertifikat enkripsi SSL (Secure Sockets Layer) aktif untuk memastikan bahwa semua data sandi (password), email, dan informasi yang Anda masukkan saat login tidak dapat diintip oleh pihak luar yang tidak bertanggung jawab.</p>
-                    <p><strong>Penyimpanan Aman:</strong> Database akun reseller disimpan dalam server cloud terproteksi dengan hak akses yang sangat dibatasi hanya untuk staf admin resmi OKTSHOP17.</p>
-
-                    <p><strong>4. Hak Pengguna (Reseller)</strong></p>
-                    <p>Sebagai pemilik data, Anda memiliki hak penuh untuk:</p>
-                    <p>Mengubah atau memperbarui data nomor WhatsApp dan email Anda kapan saja melalui halaman profil akun.</p>
-                    <p>Meminta penghapusan akun dan data pribadi Anda secara permanen dari sistem kami dengan menghubungi Layanan Pelanggan kami.</p>
-
-                    <p><strong>5. Kontak Kami</strong></p>
-                    <p>Jika Anda memiliki pertanyaan, kekhawatiran, atau keluhan terkait cara kami mengelola data pribadi Anda, silakan hubungi kami melalui:</p>
-                    <p>WhatsApp Admin: 0895-3454-52412<br>
-                    Email: OKTSHOP17@GMAIL.COM<br>
-                    Alamat: Cipare Jaya, RT003/021 Kota Serang-Banten, 42127.</p>
+                <div class="privacy-trigger-row">
+                    <button type="button" class="btn-view-privacy" onclick="openPrivacyModal()">📄 Lihat Kebijakan Privasi</button>
+                    <label class="privacy-checkbox-label" id="privacyCheckboxLabel">
+                        <input type="checkbox" id="agreePrivacy" disabled required>
+                        <span id="privacyCheckboxText">Wajib dibaca dulu sebelum bisa mendaftar</span>
+                    </label>
                 </div>
-                <label class="privacy-checkbox-label" id="privacyCheckboxLabel">
-                    <input type="checkbox" id="agreePrivacy" disabled required>
-                    <span id="privacyCheckboxText">Scroll kebijakan privasi di atas sampai bawah untuk mencentang ini</span>
-                </label>
 
                 <button type="submit" class="btn-primary">DAFTAR & AKTIVASI</button>
             </form>
@@ -605,6 +572,54 @@
         </div>
         <p class="form-sub" style="text-align:left;">Jangan lupa checklist hari ini biar poin dan bonus mingguan tetap aman!</p>
         <div id="checklistModalBody"></div>
+    </div>
+</div>
+
+<div id="privacyModal" class="hidden modal-overlay">
+    <div class="modal-box privacy-modal-box">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2px;">
+            <h3 style="margin:0;">📄 Kebijakan Privasi</h3>
+            <button onclick="closePrivacyModal()" style="background:none; border:none; font-size:18px; color:#999; cursor:pointer;">✕</button>
+        </div>
+        <p class="form-sub" style="text-align:left; margin-bottom:10px;">Baca sampai bawah untuk mengaktifkan tombol Setuju.</p>
+
+        <div id="privacyPolicyBox" class="privacy-policy-box">
+            <p><strong>KEBIJAKAN PRIVASI OKTSHOP17</strong></p>
+            <p>Selamat datang di OKTSHOP17 (www.oktshop17.online). Kami sangat menghargai kepercayaan Anda sebagai mitra bisnis dan reseller kami. Kebijakan Privasi ini dibuat untuk menjelaskan bagaimana kami mengumpulkan, menyimpan, melindungi, dan menggunakan data pribadi Anda, khususnya nomor WhatsApp dan alamat email.</p>
+            <p>Dengan mendaftar, mengakses, atau menggunakan layanan di platform OKTSHOP17, Anda dianggap telah membaca, memahami, dan menyetujui seluruh ketentuan dalam Kebijakan Privasi ini.</p>
+
+            <p><strong>1. Informasi yang Kami Kumpulkan</strong></p>
+            <p>Untuk keperluan operasional kemitraan dan pengelolaan reseller, kami mengumpulkan informasi pribadi yang Anda berikan secara sukarela saat pendaftaran atau pengisian formulir, meliputi:</p>
+            <p>Nama Toko: OKTSHOP17<br>
+            Nomor WhatsApp Aktif: 0895-3454-52412<br>
+            Alamat Email Aktif: OKTSHOP17@GMAIL.COM<br>
+            Detail Pengiriman (Alamat Lengkap untuk keperluan distribusi stok/pesanan)</p>
+
+            <p><strong>2. Cara Kami Menggunakan Data Anda</strong></p>
+            <p>Kami berkomitmen untuk tidak menjual, menyewakan, atau menyalahgunakan data pribadi Anda kepada pihak ketiga. Data WhatsApp dan email Anda hanya digunakan untuk kepentingan internal berikut:</p>
+            <p><strong>Verifikasi Akun:</strong> Mengonfirmasi identitas Anda sebagai reseller resmi OKTSHOP17.</p>
+            <p><strong>Komunikasi Operasional:</strong> Mengirimkan notifikasi status pemesanan, konfirmasi pembayaran (Transfer Bank/QRIS), resi pengiriman, serta informasi retur barang.</p>
+            <p><strong>Layanan Pelanggan:</strong> Menghubungi Anda secara langsung melalui WhatsApp atau email untuk menyelesaikan kendala teknis atau keluhan pelanggan.</p>
+            <p><strong>Informasi Produk:</strong> Mengirimkan pembaruan katalog, informasi stok produk, atau program promo khusus reseller (Anda dapat memilih untuk berhenti berlangganan kapan saja).</p>
+
+            <p><strong>3. Keamanan dan Penyimpanan Data</strong></p>
+            <p>Kami menjaga keamanan data Anda dengan sangat serius.</p>
+            <p><strong>Perlindungan SSL:</strong> Website kami menggunakan sertifikat enkripsi SSL (Secure Sockets Layer) aktif untuk memastikan bahwa semua data sandi (password), email, dan informasi yang Anda masukkan saat login tidak dapat diintip oleh pihak luar yang tidak bertanggung jawab.</p>
+            <p><strong>Penyimpanan Aman:</strong> Database akun reseller disimpan dalam server cloud terproteksi dengan hak akses yang sangat dibatasi hanya untuk staf admin resmi OKTSHOP17.</p>
+
+            <p><strong>4. Hak Pengguna (Reseller)</strong></p>
+            <p>Sebagai pemilik data, Anda memiliki hak penuh untuk:</p>
+            <p>Mengubah atau memperbarui data nomor WhatsApp dan email Anda kapan saja melalui halaman profil akun.</p>
+            <p>Meminta penghapusan akun dan data pribadi Anda secara permanen dari sistem kami dengan menghubungi Layanan Pelanggan kami.</p>
+
+            <p><strong>5. Kontak Kami</strong></p>
+            <p>Jika Anda memiliki pertanyaan, kekhawatiran, atau keluhan terkait cara kami mengelola data pribadi Anda, silakan hubungi kami melalui:</p>
+            <p>WhatsApp Admin: 0895-3454-52412<br>
+            Email: OKTSHOP17@GMAIL.COM<br>
+            Alamat: Cipare Jaya, RT003/021 Kota Serang-Banten, 42127.</p>
+        </div>
+
+        <button type="button" id="btnAgreePrivacy" class="btn-primary" disabled onclick="confirmAgreePrivacy()" style="margin-top:12px; opacity:0.5;">Baca sampai bawah dulu ⬇️</button>
     </div>
 </div>
 </body>
