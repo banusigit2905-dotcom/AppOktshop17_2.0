@@ -251,6 +251,41 @@ async function claimMilestone(count, bonus) {
 }
 
 // ---------------------------------------------------------------
+// 6) KEBIJAKAN PRIVASI DI FORM DAFTAR — checkbox baru aktif setelah di-scroll sampai bawah
+// ---------------------------------------------------------------
+(function setupPrivacyPolicyGate() {
+    function init() {
+        const box = document.getElementById("privacyPolicyBox");
+        const checkbox = document.getElementById("agreePrivacy");
+        const label = document.getElementById("privacyCheckboxLabel");
+        const text = document.getElementById("privacyCheckboxText");
+        if (!box || !checkbox) return;
+
+        function enableCheckbox() {
+            if (checkbox.disabled) {
+                checkbox.disabled = false;
+                label.classList.add("ready");
+                text.textContent = "Saya sudah membaca dan menyetujui Kebijakan Privasi di atas";
+            }
+        }
+
+        // Kalau kontennya pendek (muat semua tanpa perlu scroll), langsung aktifkan
+        if (box.scrollHeight <= box.clientHeight + 4) enableCheckbox();
+
+        box.addEventListener("scroll", () => {
+            const scrolledToBottom = box.scrollTop + box.clientHeight >= box.scrollHeight - 8;
+            if (scrolledToBottom) enableCheckbox();
+        });
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", init);
+    } else {
+        init();
+    }
+})();
+
+// ---------------------------------------------------------------
 // 5) AUTO-ISI KODE REFERRAL DI FORM DAFTAR DARI URL (?ref=KODE)
 // ---------------------------------------------------------------
 (function prefillReferralCodeFromURL() {
