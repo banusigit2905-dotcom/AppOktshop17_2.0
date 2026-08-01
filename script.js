@@ -518,12 +518,8 @@ document.getElementById("registerForm").onsubmit = async (e) => {
     // Wajib centang persetujuan Kebijakan Privasi dulu
     const agreeCheckbox = document.getElementById("agreePrivacy");
     if (agreeCheckbox && !agreeCheckbox.checked) {
-        if (agreeCheckbox.disabled) {
-            document.getElementById("privacyPolicyBox")?.scrollIntoView({ behavior: "smooth", block: "center" });
-            alert("Silakan baca Kebijakan Privasi sampai bawah terlebih dahulu sebelum mendaftar.");
-        } else {
-            alert("Silakan centang persetujuan Kebijakan Privasi terlebih dahulu.");
-        }
+        alert("Silakan baca dan setujui Kebijakan Privasi terlebih dahulu sebelum mendaftar.");
+        if (typeof openPrivacyModal === 'function') openPrivacyModal();
         return;
     }
 
