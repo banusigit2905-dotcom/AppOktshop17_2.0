@@ -79,3 +79,6 @@
 .status-active { background: #dcecd4; color: #3c6b2a; }
 .status-pending { background: #f0e9d8; color: #a89060; }
 .empty-state { text-align: center; padding: 30px 20px; color: #a89878; font-size: 12px; }
+
+/* Modal privasi harus tampil DI ATAS layar login/daftar (#loginScreen z-index: 5000) */
+#privacyModal { z-index: 5500 !important; }
