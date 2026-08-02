@@ -257,17 +257,14 @@ function openPrivacyModal() {
     const modal = document.getElementById("privacyModal");
     const box = document.getElementById("privacyPolicyBox");
     const btn = document.getElementById("btnAgreePrivacy");
-    alert("DEBUG 4B: modal=" + (modal ? "ADA" : "TIDAK ADA") + " | box=" + (box ? "ADA" : "TIDAK ADA") + " | btn=" + (btn ? "ADA" : "TIDAK ADA"));
-    if (!modal || !box || !btn) { alert("DEBUG 4C: BERHENTI DI SINI - salah satu elemen di atas tidak ditemukan."); return; }
+    if (!modal || !box || !btn) return;
 
     modal.classList.remove("hidden");
-    alert("DEBUG 4D: class modal sekarang = " + modal.className);
     box.scrollTop = 0; // selalu mulai dari atas tiap dibuka
 
     // Kalau checkbox sudah pernah disetujui sebelumnya, tombol langsung aktif juga
     const alreadyAgreed = document.getElementById("agreePrivacy")?.checked;
     setAgreeButtonState(alreadyAgreed);
-    alert("DEBUG 4E: selesai openPrivacyModal, seharusnya modal sudah tampil.");
 }
 
 function closePrivacyModal() {
