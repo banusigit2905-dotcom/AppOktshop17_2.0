@@ -227,6 +227,7 @@ tbody tr td[style*="text-align:center"] { text-align: center !important; }
 
 @media (min-width: 992px) {
     #sidebar { left: 0; } #mainContent { margin-left: 260px; } .menu-toggle { display: none; }
+    .bf-panel { width: 100%; margin-left: -15px; margin-right: -15px; }
 }
 /* --- TAMBAHAN BARU --- */
 .running-text-container {
@@ -531,40 +532,44 @@ td small {
 .bf-panel {
     background: #FFF8F0;
     color: #241A10;
-    margin: 0 -15px -15px;
-    padding: 18px 15px 24px;
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    margin-right: calc(-50vw + 50%);
+    margin-bottom: -15px;
+    padding: 16px 12px 22px;
     border-radius: 22px 22px 0 0;
+    box-sizing: border-box;
 }
 .bf-section-title {
     font-size: 13px;
     font-weight: 900;
     letter-spacing: 0.3px;
     color: #241A10;
-    margin-bottom: 14px;
+    margin-bottom: 12px;
 }
 .bf-stat-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 12px;
+    gap: 10px;
 }
 .bf-card {
-    border-radius: 18px;
-    padding: 16px;
+    border-radius: 16px;
+    padding: 13px;
     border: 3px solid #241A10;
-    box-shadow: 5px 5px 0 #241A10;
+    box-shadow: 4px 4px 0 #241A10;
     cursor: pointer;
     transition: transform 0.1s, box-shadow 0.1s;
     color: #fff;
 }
 .bf-card:active {
-    transform: translate(3px, 3px);
+    transform: translate(2px, 2px);
     box-shadow: 2px 2px 0 #241A10;
 }
 .bf-card.bf-wide { grid-column: span 2; }
-.bf-icon { font-size: 24px; display: block; margin-bottom: 6px; }
-.bf-label { font-size: 10.5px; font-weight: 800; text-transform: uppercase; opacity: 0.95; letter-spacing: 0.3px; }
-.bf-value { font-size: 22px; font-weight: 900; margin-top: 2px; }
-.bf-link { display: inline-block; margin-top: 8px; font-size: 10.5px; font-weight: 800; text-decoration: underline; }
+.bf-icon { font-size: 20px; display: block; margin-bottom: 5px; }
+.bf-label { font-size: 10px; font-weight: 800; text-transform: uppercase; opacity: 0.95; letter-spacing: 0.3px; }
+.bf-value { font-size: 19px; font-weight: 900; margin-top: 2px; }
+.bf-link { display: inline-block; margin-top: 7px; font-size: 10px; font-weight: 800; text-decoration: underline; }
 
 .bf-coral  { background: #FF6B5B; }
 .bf-blue   { background: #3FA9F5; }
