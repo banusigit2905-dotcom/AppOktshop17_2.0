@@ -754,14 +754,14 @@ async function openRiwayatTukarPoin() {
             .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
 
         body.innerHTML = docs.map(r => {
-            const isSelesai = r.status === 'Selesai';
+            const isSelesai = r.status === 'Berhasil!';
             const tgl = r.createdAt?.toDate ? r.createdAt.toDate().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) : '-';
             return `<div class="status-pill-row">
                 <div>
                     <div class="nm" style="font-size:12.5px;font-weight:800;">${r.kode || '-'}</div>
                     <div class="sub" style="font-size:10.5px;color:#8a7a66;">${tgl} · ${(r.points || 0).toLocaleString('id-ID')} Poin</div>
                 </div>
-                <span class="status-chip ${isSelesai ? 'selesai' : 'pending'}">${isSelesai ? 'Selesai' : 'Pending'}</span>
+                <span class="status-chip ${isSelesai ? 'Berhasil!' : 'pending'}">${isSelesai ? 'Berhasil!' : 'Pending'}</span>
             </div>`;
         }).join('');
     } catch (err) {
