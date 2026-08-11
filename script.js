@@ -210,9 +210,9 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 
 // ==== EMAILJS SETUP — GANTI 3 NILAI INI SESUAI AKUN EMAILJS ANDA ====
-const EMAILJS_PUBLIC_KEY = "GANTI_PUBLIC_KEY_ANDA";   // Account > General
-const EMAILJS_SERVICE_ID = "GANTI_SERVICE_ID_ANDA";   // Email Services
-const EMAILJS_TEMPLATE_ID = "GANTI_TEMPLATE_ID_ANDA"; // Email Templates
+const EMAILJS_PUBLIC_KEY = "ymyyRbjGQH-VCM_EQ";   // Account > General
+const EMAILJS_SERVICE_ID = "service_oktshop1";   // Email Services
+const EMAILJS_TEMPLATE_ID = "template_oktshop17"; // Email Templates
 if (typeof emailjs !== 'undefined') emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
 // =====================================================================
 
