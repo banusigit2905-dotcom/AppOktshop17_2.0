@@ -1,5 +1,5 @@
 // --- LOGIKA SUARA ADMIN ---
-const notifSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+const notifSound = new Audio('https://www.image2url.com/r2/default/audio/1786267713429-d764a056-91df-4380-901a-f8b237d8b59f.mp3');
 notifSound.preload = "auto";
 let lastAdminCounts = { redeem: -1, activation: -1, order: -1, return: -1, complaint: -1 };
 let notifSoundUnlocked = false;
