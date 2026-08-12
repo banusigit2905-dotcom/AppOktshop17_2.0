@@ -273,15 +273,17 @@
 
         <!-- FILTER TANGGAL ADMIN -->
         <div class="bf-filter-row">
-            <div style="flex: 1;">
+            <div class="bf-filter-group">
                 <label class="bf-filter-label">DARI:</label>
-                <input type="date" id="filterAdminStart" onchange="loadAdminData()" class="bf-filter-input">
+                <input type="date" id="filterAdminStart" class="bf-filter-input">
             </div>
-            <div class="bf-filter-sd">s/d</div>
-            <div style="flex: 1;">
+            <div class="bf-filter-group">
                 <label class="bf-filter-label">SAMPAI:</label>
-                <input type="date" id="filterAdminEnd" onchange="loadAdminData()" class="bf-filter-input">
+                <input type="date" id="filterAdminEnd" class="bf-filter-input">
             </div>
+            <button onclick="loadAdminData()" class="bf-filter-btn-reset">Filter</button>
+            <button onclick="resetAdminOrderFilter()" class="bf-filter-btn-reset">Reset</button>
+            <div class="bf-filter-sd">*Maksimal 30 hari. Default: 7 hari</div>
         </div>
 
         <div class="table-container">
@@ -289,12 +291,14 @@
                 <thead>
                     <tr>
                         <th>Reseller</th>
-                        <th>No. Order / Tgl</th> <!-- Tambah info tanggal di sini -->
+                        <th>No. Order</th>
                         <th>Produk</th>
                         <th>Aksi</th>
                     </tr>
                 </thead>
-                <tbody id="adminOrderTable"></tbody>
+                <tbody id="adminOrderTable">
+                    <!-- Data akan dimuat otomatis -->
+                </tbody>
             </table>
         </div>
     </div>
