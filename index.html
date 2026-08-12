@@ -398,66 +398,61 @@
                 <section id="secResellerRiwayatPesanan" class="app-section hidden">
                     <div class="card card-border">
                         <h3>🧾 Riwayat Pesanan</h3>
-                        <div class="filter-row">
-                            <div style="flex: 1;">
-                                <label style="font-size: 9px; font-weight: bold; display: block;">DARI TANGGAL</label>
-                                <input type="date" id="filterStart" onchange="loadResellerData()" style="width: 100%;">
-                            </div>
-                            <div style="color: #666; font-size: 11px; margin-top: 15px;">s/d</div>
-                            <div style="flex: 1;">
-                                <label style="font-size: 9px; font-weight: bold; display: block;">SAMPAI TANGGAL</label>
-                                <input type="date" id="filterEnd" onchange="loadResellerData()" style="width: 100%;">
-                            </div>
-                            <button onclick="resetOrderFilter()" class="btn-secondary" style="width: auto; margin:0; padding: 5px 10px; font-size: 10px; margin-top:15px;">Reset</button>
-                        </div>
-                        <p style="font-size:10px; color:#8a7a66; margin:6px 0 10px;">*Pilih rentang tanggal (bisa 1 hari, 1 bulan, atau 1 tahun) untuk filter. Kosongkan buat lihat pesanan hari ini.</p>
-                        <div class="table-container">
-                            <table>
-                                <thead><tr><th>No.Order</th><th>Produk</th><th>Total</th><th>Status</th></tr></thead>
-                                <tbody id="resellerOrderTable"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </section>
+                        <div class="bf-filter-row">
+            <div class="bf-filter-group">
+                <label class="bf-filter-label">DARI:</label>
+                <input type="date" id="filterStart" class="bf-filter-input">
+            </div>
+            <div class="bf-filter-group">
+                <label class="bf-filter-label">SAMPAI:</label>
+                <input type="date" id="filterEnd" class="bf-filter-input">
+            </div>
+            <button onclick="loadResellerData()" class="bf-filter-btn-reset">Filter</button>
+            <button onclick="resetOrderFilter()" class="bf-filter-btn-reset">Reset</button>
+            <div class="bf-filter-sd">*Maksimal 30 hari. Default: 7 hari</div>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 100px;">No. Order</th>
+                        <th>Produk</th>
+                        <th style="width: 120px;">Total</th>
+                        <th style="width: 80px;">Status</th>
+                    </tr>
+                </thead>
+                <tbody id="resellerOrderTable">
+                    <!-- Data akan dimuat otomatis -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
 
                 <!-- Bagian Retur -->
-<section id="secResellerReturn" class="app-section hidden">
+<section id="secResellerReturns" class="app-section hidden bf-panel">
     <div class="card card-border">
-        <h3>📦 Form Retur Barang</h3>
-        <p style="font-size: 11px; color: #666; margin-bottom: 10px;">Silakan isi detail produk yang ingin dikembalikan.</p>
-        
-        <form id="resellerReturnForm" class="form-styled">
-            <label style="font-size: 12px; font-weight: bold;">Nama Produk</label>
-            <input type="text" id="retProd" placeholder="Contoh: Baso Aci Original" required>
-            
-            <label style="font-size: 12px; font-weight: bold;">Alasan Retur</label>
-            <textarea id="retReason" placeholder="Jelaskan detail kerusakan atau alasan retur..."></textarea>
-            
-            <label style="font-size: 12px; font-weight: bold;">No. WhatsApp (Aktif)</label>
-            <input type="tel" id="retHp" placeholder="Contoh: 08123456789" required>
-            
-            <button type="submit" class="btn-primary">KIRIM LAPORAN RETUR</button>
-        </form>
+        <h3 style="margin:0; margin-bottom:15px;">🎁 Riwayat Retur</h3>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>No. Retur</th>
+                        <th>Produk</th>
+                        <th>Alasan</th>
+                        <th>No. HP</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="resellerReturnHistory">
+                    <!-- Data akan dimuat otomatis -->
+                </tbody>
+            </table>
+        </div>
     </div>
-    <!-- Cari tabel di dalam secResellerReturn -->
-<div class="card card-border">
-    <h3>Riwayat Retur Anda</h3>
-    <div class="table-container">
-        <table>
-            <thead>
-                <tr>
-                    <th>Kode</th>
-                    <th>Produk</th>
-                    <th>Alasan</th>
-                    <th>Nomor</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody id="resellerReturnHistory"></tbody>
-        </table>
-    </div>
-</div>
 </section>
+
                 <!-- Bagian Keluhan -->
 <section id="secResellerComplaint" class="app-section hidden">
     <div class="card card-border">
@@ -484,63 +479,71 @@
         <table>
             <thead>
                 <tr>
-                    <th>Kode</th>
-                    <th>Nama</th>
-                    <th>Isi Keluhan</th>
-                    <th>Nomor</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody id="resellerCompHistory"></tbody>
-        </table>
+                    <th>No. Keluhan</th>
+                        <th>Pesan</th>
+                        <th>No. HP</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="resellerCompHistory">
+                    <!-- Data akan dimuat otomatis -->
+                </tbody>
+            </table>
+        </div>
     </div>
-</div>
 </section>
                 <section id="secAdminRankings" class="app-section hidden"><div class="card card-border"><h3>🏆 Peringkat</h3><div class="table-container"><table><thead><tr><th>No</th><th>Nama</th><th>Poin</th><th>Total</th></tr></thead><tbody id="adminRankTable"></tbody></table></div></div></section>
                 
 <!-- SECTION ADMIN RETUR -->
-<section id="secAdminReturn" class="app-section hidden">
-    <div class="card card-border">
-        <h3>📥 Daftar Returan Masuk</h3>
+<section id="secAdminReturns" class="app-section hidden bf-panel">
+    <div class="bf-table-card">
+        <div class="bf-table-head">
+            <h3>🎁 Retur Masuk</h3>
+        </div>
         <div class="table-container">
             <table>
                 <thead>
                     <tr>
                         <th>No. Retur</th>
+                        <th>Nama Reseller</th>
                         <th>Produk</th>
-                        <th>Penyebab Retur</th>
+                        <th>Alasan</th>
                         <th>No. HP</th>
                         <th>Aksi</th>
                     </tr>
                 </thead>
-                <tbody id="adminReturnTable"></tbody>
+                <tbody id="adminReturnTable">
+                    <!-- Data akan dimuat otomatis -->
+                </tbody>
             </table>
         </div>
     </div>
 </section>
 
 <!-- SECTION ADMIN KELUHAN -->
-<section id="secAdminComplaint" class="app-section hidden">
-    <div class="card card-border">
-        <h3>📢 Daftar Keluhan Masuk</h3>
+<section id="secAdminComplaints" class="app-section hidden bf-panel">
+    <div class="bf-table-card">
+        <div class="bf-table-head">
+            <h3>📢 Keluhan Masuk</h3>
+        </div>
         <div class="table-container">
             <table>
                 <thead>
                     <tr>
-                        <th>No. Laporan</th>
-                        <th>Isi Laporan</th>
+                        <th>No. Keluhan</th>
+                        <th>Nama Reseller</th>  <!-- ===== TAMBAH KOLOM INI ===== -->
+                        <th>Pesan</th>
                         <th>No. HP</th>
                         <th>Aksi</th>
                     </tr>
                 </thead>
-                <tbody id="adminCompTable"></tbody>
+                <tbody id="adminCompTable">
+                    <!-- Data akan dimuat otomatis -->
+                </tbody>
             </table>
         </div>
     </div>
 </section>
-            </div>
-        </main>
-    </div>
 
     <!-- MODALS -->
     <!-- MODAL REDEEM POIN -->
