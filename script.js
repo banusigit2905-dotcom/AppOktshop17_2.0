@@ -2417,7 +2417,7 @@ function isMerdekaDay() {
 }
 
 function usingCustomMerdekaMp3() {
-    return MERDEKA_MP3_URL && MERDEKA_MP3_URL !== 'PASTE_LINK_MP3_KAMU_DI_SINI';
+    return MERDEKA_MP3_URL && MERDEKA_MP3_URL !== 'https://anytourl.com/s/85583133944096575';
 }
 
 function playFanfareOnce() {
