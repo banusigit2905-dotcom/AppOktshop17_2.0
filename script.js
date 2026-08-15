@@ -2398,7 +2398,7 @@ function goToStep1() { document.getElementById("orderStep1").classList.remove("h
 // MAU GANTI PAKAI LAGU MP3 SENDIRI? Gampang — tinggal 2 langkah:
 // 1) Upload file MP3 kamu ke hosting/link publik (sama seperti notifSound di baris paling atas file ini).
 // 2) Paste link-nya di bawah ini, ganti tulisan 'PASTE_LINK_MP3_KAMU_DI_SINI':
-const MERDEKA_MP3_URL = 'PASTE_LINK_MP3_KAMU_DI_SINI';
+const MERDEKA_MP3_URL = 'https://anytourl.com/s/85583133944096575';
 // Contoh format link (sama seperti notifSound di atas):
 // const MERDEKA_MP3_URL = 'https://www.image2url.com/r2/default/audio/xxxxxxx.mp3';
 //
