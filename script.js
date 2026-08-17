@@ -2568,7 +2568,7 @@ function goToStep1() { document.getElementById("orderStep1").classList.remove("h
 // MAU GANTI PAKAI LAGU MP3 SENDIRI? Gampang — tinggal 2 langkah:
 // 1) Upload file MP3 kamu ke hosting/link publik (sama seperti notifSound di baris paling atas file ini).
 // 2) Paste link-nya di bawah ini, ganti tulisan 'PASTE_LINK_MP3_KAMU_DI_SINI':
-const MERDEKA_MP3_URL = 'PASTE_LINK_MP3_KAMU_DI_SINI';
+const MERDEKA_MP3_URL = 'https://mp3tourl.com/audio/1786926811681-550f9791-53ae-4ede-9d9d-4420905fd59c.mp3';
 // Contoh format link (sama seperti notifSound di atas):
 // const MERDEKA_MP3_URL = 'https://www.image2url.com/r2/default/audio/xxxxxxx.mp3';
 //
@@ -2592,7 +2592,7 @@ function isMerdekaDay() {
 }
 
 function usingCustomMerdekaMp3() {
-    return MERDEKA_MP3_URL && MERDEKA_MP3_URL !== 'PASTE_LINK_MP3_KAMU_DI_SINI';
+    return MERDEKA_MP3_URL && MERDEKA_MP3_URL !== 'https://mp3tourl.com/audio/1786926811681-550f9791-53ae-4ede-9d9d-4420905fd59c.mp3';
 }
 
 function playFanfareOnce() {
