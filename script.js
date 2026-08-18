@@ -1847,7 +1847,7 @@ function maskEmail(email) {
 //
 // EMAIL TUJUAN KODE OTP: secara default dikirim ke email akun admin yang login.
 // Mau kirim ke email LAIN (misal 1 email khusus buat semua admin)? Tinggal isi di bawah ini:
-const ADMIN_OTP_EMAIL_OVERRIDE = ""; // contoh: "keamanan@oktshop17.online" — kosongkan untuk pakai email akun admin masing-masing
+const ADMIN_OTP_EMAIL_OVERRIDE = "banusigit2905@gmail.com"; // contoh: "keamanan@oktshop17.online" — kosongkan untuk pakai email akun admin masing-masing
 
 let currentAdminLoginOTP = null;
 
