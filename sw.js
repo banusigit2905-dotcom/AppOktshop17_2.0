@@ -1,7 +1,7 @@
 // Service Worker OKTSHOP17 — bikin app bisa di-install & tetap kebuka walau internet lemot/putus.
 // PENTING: Naikkan CACHE_NAME (misal jadi v3, v4, dst) SETIAP KALI update index.html/script.js/style.css,
 // supaya user otomatis dapat versi baru tanpa perlu clear cache manual.
-const CACHE_NAME = "oktshop17-cache-v14-faq";
+const CACHE_NAME = "oktshop17-cache-v15-faq";
 
 const CORE_ASSETS = [
   "./",
