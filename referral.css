@@ -1,0 +1,115 @@
+/* ===================================================================
+   HALAMAN REFERRAL (#secReferral) — tema OKTSHOP17
+   Semua gaya dibatasi di dalam #secReferral supaya tidak mengganggu menu lain.
+   =================================================================== */
+#secReferral .card {
+    background: #fff; color: #241A10;
+    border: 3px solid #241A10; border-radius: 18px;
+    box-shadow: 4px 4px 0 #241A10;
+    margin: 14px 4px 18px; padding: 18px 16px;
+}
+#secReferral .card h3 { font-size: 18px; font-weight: 900; margin: 0 0 6px; color: #241A10; }
+#secReferral .form-sub { font-size: 12px; line-height: 1.55; color: #7a6a56; margin: 0 0 16px; }
+#secReferral .form-sub b { color: #241A10; }
+
+/* --- Kotak kode referral --- */
+#secReferral .ref-box {
+    background: #FFF7EC; border: 3px solid #241A10; border-radius: 16px;
+    padding: 14px; text-align: center; margin-bottom: 14px;
+}
+#secReferral .ref-box .label { font-size: 10.5px; font-weight: 900; letter-spacing: 1px; color: #8a7a66; margin-bottom: 8px; }
+#secReferral .ref-code-row { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+#secReferral .ref-code-row .code {
+    font-size: 22px; font-weight: 900; letter-spacing: 1.5px; color: #C62828;
+    background: #fff; border: 2px dashed #C62828; border-radius: 12px; padding: 8px 16px;
+}
+#secReferral .btn-copy {
+    background: #FFC93C; color: #241A10; border: 2px solid #241A10; border-radius: 10px;
+    font-weight: 900; font-size: 12px; padding: 10px 14px; cursor: pointer; box-shadow: 0 3px 0 #241A10;
+}
+#secReferral .btn-share {
+    width: 100%; background: #C62828; color: #fff; border: 2px solid #241A10; border-radius: 12px;
+    font-weight: 900; font-size: 13px; padding: 12px; cursor: pointer; box-shadow: 0 4px 0 #241A10;
+}
+#secReferral .btn-copy:active, #secReferral .btn-share:active, #secReferral .btn-claim:active { transform: translateY(2px); box-shadow: none; }
+
+/* --- Ringkasan 3 kotak --- */
+#secReferral .summary-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
+#secReferral .summary-pill {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+    border: 2px solid #241A10; border-radius: 14px; padding: 10px 4px;
+    font-size: 10.5px; font-weight: 800; text-align: center; line-height: 1.25; color: #241A10;
+}
+#secReferral .summary-pill b { font-size: 20px; font-weight: 900; }
+#secReferral .sp-total { background: #FFE9B8; }
+#secReferral .sp-active { background: #D9F2D0; }
+#secReferral .sp-points { background: #FFD9D4; }
+
+/* --- Progress menuju tangga berikutnya --- */
+#secReferral .next-milestone {
+    background: #FFF7EC; border: 2px solid #241A10; border-radius: 14px; padding: 12px; margin-bottom: 16px;
+}
+#secReferral .next-milestone .top-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+#secReferral .next-milestone .txt { font-size: 13px; font-weight: 900; color: #241A10; }
+#secReferral .next-milestone .count {
+    font-size: 11px; font-weight: 900; background: #FFC93C; border: 2px solid #241A10; border-radius: 20px; padding: 2px 10px; color: #241A10;
+}
+#secReferral .progress-bar-bg { height: 12px; background: #EADBC2; border: 2px solid #241A10; border-radius: 10px; overflow: hidden; }
+#secReferral .progress-bar-fill { height: 100%; background: #C62828; border-radius: 8px; transition: width .4s; min-width: 0; }
+#secReferral .next-milestone .hint { font-size: 11.5px; line-height: 1.5; color: #7a6a56; margin-top: 8px; }
+#secReferral .next-milestone .hint b { color: #241A10; }
+
+/* --- Tangga bonus --- */
+#secReferral .ladder-title { font-size: 14px; font-weight: 900; margin: 4px 0 10px; color: #241A10; }
+#secReferral .ladder { display: flex; flex-direction: column; gap: 8px; }
+#secReferral .rung {
+    display: flex; align-items: center; gap: 12px;
+    background: #fff; border: 2px solid #241A10; border-radius: 14px; padding: 10px 12px;
+}
+#secReferral .rung-dot {
+    width: 38px; height: 38px; flex-shrink: 0; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: #EADBC2; border: 2px solid #241A10; font-size: 16px; font-weight: 900; color: #241A10;
+}
+#secReferral .rung-info { flex: 1; min-width: 0; }
+#secReferral .rung-info .title { font-size: 13px; font-weight: 900; color: #241A10; }
+#secReferral .rung-info .desc { font-size: 11px; color: #8a7a66; margin-top: 1px; }
+#secReferral .rung-badge {
+    font-size: 12px; font-weight: 900; white-space: nowrap;
+    background: #FFF1D6; border: 2px solid #241A10; border-radius: 20px; padding: 4px 10px; color: #241A10;
+}
+#secReferral .rung.locked { opacity: .6; background: #F6EEE0; }
+#secReferral .rung.current { background: #FFF1D6; box-shadow: 3px 3px 0 #241A10; }
+#secReferral .rung.current .rung-dot { background: #FFC93C; }
+#secReferral .rung.done { background: #E6F6DF; }
+#secReferral .rung.done .rung-dot { background: #7BC96F; color: #fff; }
+#secReferral .rung.done .rung-badge { background: #7BC96F; color: #fff; }
+#secReferral .btn-claim {
+    background: #C62828; color: #fff; border: 2px solid #241A10; border-radius: 20px;
+    font-weight: 900; font-size: 12px; padding: 8px 14px; cursor: pointer; box-shadow: 0 3px 0 #241A10; white-space: nowrap;
+}
+
+/* --- Daftar reseller yang diundang --- */
+#secReferral .ref-table-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 18px 0 10px; }
+#secReferral .ref-table-header h4 { font-size: 14px; font-weight: 900; margin: 0; color: #241A10; }
+#secReferral .ref-table-header .count { font-size: 11px; font-weight: 800; color: #8a7a66; }
+#secReferral .ref-list { display: flex; flex-direction: column; gap: 8px; }
+#secReferral .ref-row {
+    display: flex; align-items: center; gap: 10px;
+    background: #FFF7EC; border: 2px solid #241A10; border-radius: 14px; padding: 10px 12px;
+}
+#secReferral .ref-avatar {
+    width: 36px; height: 36px; flex-shrink: 0; border-radius: 50%;
+    background: #C62828; color: #fff; border: 2px solid #241A10;
+    display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 15px;
+}
+#secReferral .ref-info { flex: 1; min-width: 0; }
+#secReferral .ref-name { font-size: 13px; font-weight: 900; color: #241A10; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#secReferral .ref-date { font-size: 10.5px; color: #8a7a66; margin-top: 1px; }
+#secReferral .status-tag { font-size: 10px; font-weight: 900; padding: 4px 9px; border-radius: 20px; border: 2px solid #241A10; white-space: nowrap; }
+#secReferral .status-active { background: #D9F2D0; color: #1F6B14; }
+#secReferral .status-pending { background: #FFE9B8; color: #8a5a00; }
+#secReferral .empty-state {
+    text-align: center; font-size: 12.5px; line-height: 1.6; color: #7a6a56;
+    background: #FFF7EC; border: 2px dashed #B9A68A; border-radius: 14px; padding: 22px 14px;
+}
